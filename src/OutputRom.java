@@ -47,10 +47,10 @@ public class OutputRom
             int fileEnd = fileStart + file.getSize();
 
             // write start address of file
-            out[offset + 0] = out[offset + 0 + 4] = (byte) ((fileStart >> 24) & 0xFF);
-            out[offset + 1] = out[offset + 1 + 4] = (byte) ((fileStart >> 16) & 0xFF);
-            out[offset + 2] = out[offset + 2 + 4] = (byte) ((fileStart >> 8) & 0xFF);
-            out[offset + 3] = out[offset + 3 + 4] = (byte) (fileStart & 0xFF);
+            out[offset + 0] = out[offset + 0 + 8] = (byte) ((fileStart >> 24) & 0xFF);
+            out[offset + 1] = out[offset + 1 + 8] = (byte) ((fileStart >> 16) & 0xFF);
+            out[offset + 2] = out[offset + 2 + 8] = (byte) ((fileStart >> 8) & 0xFF);
+            out[offset + 3] = out[offset + 3 + 8] = (byte) (fileStart & 0xFF);
 
             // write end address of file
             out[offset + 4 + 0] = (byte) ((fileEnd >> 24) & 0xFF);
@@ -61,7 +61,7 @@ public class OutputRom
             // zero the last four bytes of the entry
             for (int j = 0; j < 4; j++)
             {
-                out[offset + 8 + j] = 0;
+                out[offset + 12 + j] = 0;
             }
 
             offset += 16;
