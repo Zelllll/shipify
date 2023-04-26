@@ -4,7 +4,7 @@ public class EntryPoint
 {
     public static void main(String[] args)
     {
-        String path = "C:\\Users\\elile\\Desktop\\tmlmaps\\";
+        String path = "path/to/asset/binaries";
         OutputRom outputRom = new OutputRom("asset.bin");
 
         File[] files = new File(path).listFiles();
