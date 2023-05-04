@@ -6,11 +6,8 @@ public class RomFile
     private byte[] _fileData;
     private int _offset;
 
-    public RomFile(String diskPath)
+    public RomFile(File file)
     {
-        // set the File
-        File file = new File(diskPath);
-
         // set default offset
         _offset = 0;
 
