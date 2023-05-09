@@ -17,6 +17,11 @@ public class Scene implements Iterable<RomFile>
         setCamDataList();
     }
 
+    public ArrayList<CamData> getCamDataList()
+    {
+        return _camDataList;
+    }
+
     private int getHeaderCmdOffset(int headerBase, int cmd)
     {
         byte[] sceneData = _sceneRomFile.getData();
@@ -51,7 +56,8 @@ public class Scene implements Iterable<RomFile>
         int nCams = 0;
 
         // now that we have the address of the cam data, guess the length of it
-        while (sceneData[tempOffset] == 0x00 && sceneData[tempOffset + 0x4] == 0x02) {
+        while (sceneData[tempOffset] == 0x00 && sceneData[tempOffset + 0x4] == 0x02)
+        {
             tempOffset += 0x08;
             nCams++;
         }
@@ -59,20 +65,24 @@ public class Scene implements Iterable<RomFile>
         _camDataList.add(new CamData(camDataOffset, nCams));
     }
 
-    private class CamData {
+    protected class CamData
+    {
         int _nCamData;
         int _offset;
 
-        public CamData(int offset, int nCamData) {
+        public CamData(int offset, int nCamData)
+        {
             _nCamData = nCamData;
             _offset = offset;
         }
 
-        public int getOffset() {
+        public int getOffset()
+        {
             return _offset;
         }
 
-        public int getNumCamData() {
+        public int getNumCamData()
+        {
             return _nCamData;
         }
     }

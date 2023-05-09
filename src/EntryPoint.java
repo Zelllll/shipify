@@ -14,14 +14,16 @@ public class EntryPoint
         build(files);
     }
 
-    private static void addRoomsToScene(File[] inputFiles, Scene scene) {
+    private static void addRoomsToScene(File[] inputFiles, Scene scene)
+    {
         ArrayList<File> roomInputFiles = new ArrayList<>();
         int lastRoomAdded = -1;
 
         // add all the room file names to the list
         for (File f : inputFiles)
         {
-            if (!f.isFile()) {
+            if (!f.isFile())
+            {
                 continue;
             }
             String sceneName = scene.getName();
@@ -31,15 +33,18 @@ public class EntryPoint
             }
         }
 
-        while (lastRoomAdded < roomInputFiles.size() - 1) {
+        while (lastRoomAdded < roomInputFiles.size() - 1)
+        {
             for (File f : roomInputFiles)
             {
-                if (!f.isFile()) {
+                if (!f.isFile())
+                {
                     continue;
                 }
                 int indexOfRoomFile = Integer.parseInt(f.getName().replace(scene.getName() + "_room_", ""));
 
-                if (indexOfRoomFile == lastRoomAdded + 1) {
+                if (indexOfRoomFile == lastRoomAdded + 1)
+                {
                     scene.addRoom(new RomFile(f));
                     lastRoomAdded++;
                 }
@@ -47,12 +52,14 @@ public class EntryPoint
         }
     }
 
-    private static ArrayList<Scene> genSceneList(File[] inputFiles) {
+    private static ArrayList<Scene> genSceneList(File[] inputFiles)
+    {
         ArrayList<Scene> out = new ArrayList<>();
 
         for (File f : inputFiles)
         {
-            if (!f.isFile()) {
+            if (!f.isFile())
+            {
                 continue;
             }
             // check if the file is a scene
@@ -72,7 +79,8 @@ public class EntryPoint
         return out;
     }
 
-    private static void build(File[] inputFiles) {
+    private static void build(File[] inputFiles)
+    {
         RomWriter outputRom = new RomWriter();
         ArrayList<Scene> sceneList = genSceneList(inputFiles);
 

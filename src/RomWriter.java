@@ -112,7 +112,8 @@ public class RomWriter
 
         // output file list
         try (Writer writer = new BufferedWriter(new OutputStreamWriter(
-                new FileOutputStream(outRomFileListFile), "utf-8"))) {
+                new FileOutputStream(outRomFileListFile), "utf-8")))
+        {
             for (String romFileName : romFileNameList)
             {
                 writer.write(romFileName + "\n");
