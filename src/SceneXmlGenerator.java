@@ -45,7 +45,8 @@ public class SceneXmlGenerator
 
             for (Scene.CamData camData : _scene.getCamDataList())
             {
-                sceneNodes += camDataXmlString(camData.getOffset(), camData.getNumCamData(), "g_" + _scene.getName() + "_camData_" + Integer.toHexString(camData.getOffset()));
+                sceneNodes += camDataXmlString(camData.getOffset(), camData.getNumCamData(),
+                        "g_" + _scene.getName() + "_camData_" + Integer.toHexString(camData.getOffset()));
             }
 
             // write the scene XML string, including any extra nodes like CamData

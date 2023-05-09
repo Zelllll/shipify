@@ -1,5 +1,7 @@
 import java.io.File;
 import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class EntryPoint
 {
@@ -12,6 +14,22 @@ public class EntryPoint
         File[] files = new File(INPUT_PATH).listFiles();
 
         build(files);
+    }
+
+    // sourced from StackOverflow
+    // https://stackoverflow.com/questions/3083154/how-can-i-get-the-last-integer-56-from-string-like-ra12ke43sh56
+    private static int getIndexFromRoomName(String roomName)
+    {
+        Pattern p = Pattern.compile("[0-9]+$");
+        Matcher m = p.matcher(roomName);
+        if (m.find())
+        {
+            return Integer.parseInt(m.group());
+        }
+        else
+        {
+            throw new RuntimeException();
+        }
     }
 
     private static void addRoomsToScene(File[] inputFiles, Scene scene)
@@ -27,7 +45,7 @@ public class EntryPoint
                 continue;
             }
             String sceneName = scene.getName();
-            if (f.getName().contains(sceneName) && f.getName().contains("_room_"))
+            if (f.getName().startsWith(sceneName + "_room_"))
             {
                 roomInputFiles.add(f);
             }
@@ -41,9 +59,7 @@ public class EntryPoint
                 {
                     continue;
                 }
-                int indexOfRoomFile = Integer.parseInt(f.getName().replace(scene.getName() + "_room_", ""));
-
-                if (indexOfRoomFile == lastRoomAdded + 1)
+                if (getIndexFromRoomName(f.getName()) == lastRoomAdded + 1)
                 {
                     scene.addRoom(new RomFile(f));
                     lastRoomAdded++;

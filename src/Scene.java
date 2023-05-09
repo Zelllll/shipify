@@ -6,6 +6,26 @@ public class Scene implements Iterable<RomFile>
     private RomFile _sceneRomFile;
     private ArrayList<RomFile> _roomRomFiles;
     private ArrayList<CamData> _camDataList;
+    private ArrayList<Integer> _sceneHeaderOffsetList;
+
+    private void setHeaderOffsets() {
+        byte[] sceneData = _sceneRomFile.getData();
+        int altHeaderListOffset = getHeaderCmdOffset(0, 0x18);
+
+        // add default header at start of file
+        _sceneHeaderOffsetList.add(0);
+
+        if (altHeaderListOffset > 0) {
+            // skip the blank headers at the start
+            altHeaderListOffset += 0xC;
+
+            // add each alternate header in the list
+            while (sceneData[altHeaderListOffset] == 0x02) {
+                _sceneHeaderOffsetList.add(segAddrToOffset(sceneData, altHeaderListOffset));
+                altHeaderListOffset += 0x04;
+            }
+        }
+    }
 
     // constructor
     public Scene(RomFile scene)
@@ -13,7 +33,9 @@ public class Scene implements Iterable<RomFile>
         _sceneRomFile = scene;
         _roomRomFiles = new ArrayList<>();
         _camDataList = new ArrayList<>();
+        _sceneHeaderOffsetList = new ArrayList<>();
 
+        setHeaderOffsets();
         setCamDataList();
     }
 
@@ -50,19 +72,23 @@ public class Scene implements Iterable<RomFile>
     private void setCamDataList()
     {
         byte[] sceneData = _sceneRomFile.getData();
-        int collisionHeaderCmdOffset = getHeaderCmdOffset(0, 0x03);
-        int camDataOffset = segAddrToOffset(sceneData, segAddrToOffset(sceneData, collisionHeaderCmdOffset + 4) + 0x20);
-        int tempOffset = camDataOffset;
-        int nCams = 0;
 
-        // now that we have the address of the cam data, guess the length of it
-        while (sceneData[tempOffset] == 0x00 && sceneData[tempOffset + 0x4] == 0x02)
+        for (Integer header : _sceneHeaderOffsetList)
         {
-            tempOffset += 0x08;
-            nCams++;
-        }
+            int collisionHeaderCmdOffset = getHeaderCmdOffset(header, 0x03);
+            int camDataOffset = segAddrToOffset(sceneData, segAddrToOffset(sceneData, collisionHeaderCmdOffset + 4) + 0x20);
+            int tempOffset = camDataOffset;
+            int nCams = 0;
 
-        _camDataList.add(new CamData(camDataOffset, nCams));
+            // now that we have the address of the cam data, guess the length of it
+            while (sceneData[tempOffset] == 0x00 && sceneData[tempOffset + 0x4] == 0x02)
+            {
+                tempOffset += 0x08;
+                nCams++;
+            }
+
+            _camDataList.add(new CamData(camDataOffset, nCams));
+        }
     }
 
     protected class CamData
