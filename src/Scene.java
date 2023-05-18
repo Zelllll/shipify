@@ -8,19 +8,22 @@ public class Scene implements Iterable<RomFile>
     private ArrayList<CamData> _camDataList;
     private ArrayList<Integer> _sceneHeaderOffsetList;
 
-    private void setHeaderOffsets() {
+    private void setHeaderOffsets()
+    {
         byte[] sceneData = _sceneRomFile.getData();
         int altHeaderListOffset = getHeaderCmdOffset(0, 0x18);
 
         // add default header at start of file
         _sceneHeaderOffsetList.add(0);
 
-        if (altHeaderListOffset > 0) {
+        if (altHeaderListOffset > 0)
+        {
             // skip the blank headers at the start
             altHeaderListOffset += 0xC;
 
             // add each alternate header in the list
-            while (sceneData[altHeaderListOffset] == 0x02) {
+            while (sceneData[altHeaderListOffset] == 0x02)
+            {
                 _sceneHeaderOffsetList.add(segAddrToOffset(sceneData, altHeaderListOffset));
                 altHeaderListOffset += 0x04;
             }
@@ -69,6 +72,7 @@ public class Scene implements Iterable<RomFile>
                 (((int) arr[offsetInArr + 3] & 0xFF));
     }
 
+    // currently designed only for SharpOcarina maps
     private void setCamDataList()
     {
         byte[] sceneData = _sceneRomFile.getData();
@@ -140,7 +144,7 @@ public class Scene implements Iterable<RomFile>
     // returns the name of the scene without the "_scene" suffix
     public String getName()
     {
-        return _sceneRomFile.getName().replace("_scene", "");
+        return _sceneRomFile.getName().replace(Constants.SCENE_FILE_EXTENSION, "");
     }
 
     // iterator that gives all the RomFile's in the scene

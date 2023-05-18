@@ -22,7 +22,7 @@ public class RomWriter
 
     private int setOffsets()
     {
-        int curOffset = getDmaTableLength();
+        int curOffset = Constants.ROM_BASE + getDmaTableLength();
 
         for (RomFile romFile : _romFiles)
         {
@@ -34,7 +34,7 @@ public class RomWriter
 
     private void writeDmaTable(byte[] out)
     {
-        int offset = 0;
+        int offset = Constants.ROM_BASE;
 
         for (RomFile file : _romFiles)
         {
@@ -79,17 +79,20 @@ public class RomWriter
         // allocate rom
         byte[] outRomData = new byte[romSize];
 
+        // fill first 0x20 bytes of rom with zeros
+        for (int i = 0; i < Constants.ROM_BASE; i++)
+        {
+            outRomData[i] = 0;
+        }
+
         // make rom file
-        File outRomFile = new File(outPath + "\\out.z64");
+        File outRomFile = new File(outPath + "\\patch.z64");
 
         // make rom file list file
-        File outRomFileListFile = new File(outPath + "\\files.txt");
+        File outRomFileListFile = new File(outPath + "\\patch_files.txt");
 
         // write dma table to the start of the rom
         writeDmaTable(outRomData);
-
-        // add the dma table to the file list
-        romFileNameList.add("dmadata");
 
         // add each file to the output rom
         for (RomFile romFile : _romFiles)
