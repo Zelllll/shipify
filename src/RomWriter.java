@@ -86,10 +86,10 @@ public class RomWriter
         }
 
         // make rom file
-        File outRomFile = new File(outPath + "\\patch.z64");
+        File outRomFile = new File(outPath + "\\" + Constants.ROM_OUT_NAME);
 
         // make rom file list file
-        File outRomFileListFile = new File(outPath + "\\patch_files.txt");
+        File outRomFileListFile = new File(outPath + "\\" + Constants.ROM_FILE_LIST_OUT_NAME);
 
         // write dma table to the start of the rom
         writeDmaTable(outRomData);

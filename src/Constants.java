@@ -22,4 +22,7 @@ public class Constants
     };
 
     public static final int ROM_BASE = 0x20;
+
+    public static final String ROM_OUT_NAME = "patch_rom";
+    public static final String ROM_FILE_LIST_OUT_NAME = "patch_files.txt";
 }
