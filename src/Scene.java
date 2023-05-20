@@ -144,11 +144,11 @@ public class Scene implements Iterable<RomFile>
     // returns the name of the scene without the "_scene" suffix
     public String getName()
     {
-        return _sceneRomFile.getName().replace(Constants.SCENE_FILE_EXTENSION, "");
+        return _sceneRomFile.getName().replace(Globals.SCENE_FILE_EXTENSION, "");
     }
 
-    // iterator that gives all the RomFile's in the scene
-    class SceneIterator implements Iterator<RomFile>
+    // iterator that gives all the scene `RomFile`s
+    private class SceneIterator implements Iterator<RomFile>
     {
         private int _index;
 

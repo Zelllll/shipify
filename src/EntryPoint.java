@@ -1,5 +1,6 @@
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -74,7 +75,7 @@ public class EntryPoint
             }
 
             // check if it is an audio file
-            for (String s : Constants.AUDIO_FILE_NAMES)
+            for (String s : Globals.AUDIO_FILE_NAMES)
             {
                 if (fileName.equals(s))
                 {
@@ -83,7 +84,7 @@ public class EntryPoint
             }
 
             // check if it is a scene/room file
-            for (String s : Constants.SCENE_FILE_TYPES)
+            for (String s : Globals.SCENE_FILE_TYPES)
             {
                 if (fileName.endsWith(s))
                 {
@@ -92,7 +93,7 @@ public class EntryPoint
             }
 
             // check if it is an object file
-            for (String s : Constants.OBJECT_FILE_TYPES)
+            for (String s : Globals.OBJECT_FILE_TYPES)
             {
                 if (fileName.endsWith(s))
                 {
@@ -112,6 +113,9 @@ public class EntryPoint
         buildScenes(rom);
         buildObjects(rom);
         buildAudio(rom);
+
+        // print random meme string
+        System.out.println(Globals.MEME_STRINGS[(new Random()).nextInt(Globals.MEME_STRINGS.length)]);
 
         // save rom to disk
         rom.saveRom(_outputPath);
@@ -151,7 +155,19 @@ public class EntryPoint
     private static void buildAudio(RomWriter rom)
     {
         System.out.println("Building audio...");
-        // TODO: build audio!!!
+
+        // if there are no audio files, do not attempt to instantiate an Audio object
+        if (_audioFiles.size() == 0) {
+            return;
+        }
+
+        // instantiate an Audio object and build
+        Audio audio = new Audio(_audioFiles);
+        audio.writeAudioOffsets(_outputPath);
+        for (RomFile rf : audio)
+        {
+            rom.add(rf);
+        }
     }
 
     /**
@@ -184,7 +200,7 @@ public class EntryPoint
         {
             String fileName = f.getName();
 
-            if (fileName.startsWith(sceneName) && fileName.endsWith(Constants.ROOM_FILE_EXTENSION))
+            if (fileName.startsWith(sceneName) && fileName.endsWith(Globals.ROOM_FILE_EXTENSION))
             {
                 roomInputFiles.add(f);
             }
@@ -194,7 +210,7 @@ public class EntryPoint
         {
             for (File f : roomInputFiles)
             {
-                int roomIndex = getIndexFromRoomName(f.getName().replace(Constants.ROOM_FILE_EXTENSION, ""));
+                int roomIndex = getIndexFromRoomName(f.getName().replace(Globals.ROOM_FILE_EXTENSION, ""));
                 if (roomIndex == lastRoomAdded + 1)
                 {
                     scene.addRoom(new RomFile(f));
@@ -211,7 +227,7 @@ public class EntryPoint
         for (File f : _sceneFiles)
         {
             // check if the file is a scene
-            if (f.getName().endsWith(Constants.SCENE_FILE_EXTENSION))
+            if (f.getName().endsWith(Globals.SCENE_FILE_EXTENSION))
             {
                 // create a new scene object
                 Scene scene = new Scene(new RomFile(f));

@@ -22,7 +22,7 @@ public class RomWriter
 
     private int setOffsets()
     {
-        int curOffset = Constants.ROM_BASE + getDmaTableLength();
+        int curOffset = Globals.ROM_BASE + getDmaTableLength();
 
         for (RomFile romFile : _romFiles)
         {
@@ -34,7 +34,7 @@ public class RomWriter
 
     private void writeDmaTable(byte[] out)
     {
-        int offset = Constants.ROM_BASE;
+        int offset = Globals.ROM_BASE;
 
         for (RomFile file : _romFiles)
         {
@@ -80,16 +80,16 @@ public class RomWriter
         byte[] outRomData = new byte[romSize];
 
         // fill first 0x20 bytes of rom with zeros
-        for (int i = 0; i < Constants.ROM_BASE; i++)
+        for (int i = 0; i < Globals.ROM_BASE; i++)
         {
             outRomData[i] = 0;
         }
 
         // make rom file
-        File outRomFile = new File(outPath + "\\" + Constants.ROM_OUT_NAME);
+        File outRomFile = new File(outPath + "\\" + Globals.ROM_OUT_NAME);
 
         // make rom file list file
-        File outRomFileListFile = new File(outPath + "\\" + Constants.ROM_FILE_LIST_OUT_NAME);
+        File outRomFileListFile = new File(outPath + "\\" + Globals.ROM_FILE_LIST_OUT_NAME);
 
         // write dma table to the start of the rom
         writeDmaTable(outRomData);

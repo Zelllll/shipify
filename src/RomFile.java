@@ -6,18 +6,40 @@ public class RomFile
     private byte[] _fileData;
     private int _offset;
 
+    public RomFile(byte[] rawFile, String name) {
+        // set default offset
+        _offset = 0;
+
+        // set the file name
+        _name = name;
+
+        // set pointer to file byte data
+        _fileData = rawFile;
+    }
+
     public RomFile(File file)
     {
         // set default offset
         _offset = 0;
 
-        // set the file name
+        // set file name
         _name = file.getName();
 
+        // remove extension from file name
+        for (String extension : Globals.ALL_FILE_TYPES)
+        {
+            if (_name.endsWith(extension))
+            {
+                _name = _name.replace(extension, "");
+            }
+        }
+
+        // allocate space for file data
+        _fileData = new byte[(int) file.length()];
+
+        // read the file
         try (DataInputStream stream = new DataInputStream(new FileInputStream(file)))
         {
-            // allocate space for the file in ram
-            _fileData = new byte[(int) file.length()];
             // read the file into ram
             stream.readFully(_fileData);
         } catch (IOException e)
@@ -51,6 +73,6 @@ public class RomFile
 
     public int getSize()
     {
-        return (int) _fileData.length;
+        return _fileData.length;
     }
 }
