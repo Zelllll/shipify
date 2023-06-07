@@ -7,7 +7,7 @@ import java.util.regex.Pattern;
 public class EntryPoint
 {
     private static String _inputPath, _outputPath;
-    private static ArrayList<File> _sceneFiles, _audioFiles, _objectFiles;
+    private static ArrayList<File> _sceneFiles, _audioFiles, _objectFiles, _xmlFiles;
 
     /**
      * Setup
@@ -51,6 +51,7 @@ public class EntryPoint
             _sceneFiles = new ArrayList<>();
             _audioFiles = new ArrayList<>();
             _objectFiles = new ArrayList<>();
+            _xmlFiles = new ArrayList<>();
 
             // split the array of all files into individual file type arrays
             splitFileTypes(files);
@@ -74,30 +75,29 @@ public class EntryPoint
                 continue;
             }
 
-            // check if it is an audio file
-            for (String s : Globals.AUDIO_FILE_NAMES)
-            {
-                if (fileName.equals(s))
-                {
-                    _audioFiles.add(f);
-                }
+            if (fileName.endsWith(".xml")) {
+                // check if file is a xml
+                _xmlFiles.add(f);
             }
-
-            // check if it is a scene/room file
-            for (String s : Globals.SCENE_FILE_TYPES)
+            else if (fileName.endsWith("_scene") || fileName.contains("_room_"))
             {
-                if (fileName.endsWith(s))
-                {
-                    _sceneFiles.add(f);
-                }
+                // check if it is a scene/room file
+                _sceneFiles.add(f);
             }
-
-            // check if it is an object file
-            for (String s : Globals.OBJECT_FILE_TYPES)
+            else if (fileName.startsWith("object_"))
             {
-                if (fileName.endsWith(s))
+                // check if it is an object file
+                _objectFiles.add(f);
+            }
+            else
+            {
+                // check if it is an audio file
+                for (String s : Globals.AUDIO_FILE_NAMES)
                 {
-                    _objectFiles.add(f);
+                    if (fileName.equals(s))
+                    {
+                        _audioFiles.add(f);
+                    }
                 }
             }
         }
@@ -157,7 +157,8 @@ public class EntryPoint
         System.out.println("Building audio...");
 
         // if there are no audio files, do not attempt to instantiate an Audio object
-        if (_audioFiles.size() == 0) {
+        if (_audioFiles.size() == 0)
+        {
             return;
         }
 
@@ -200,7 +201,7 @@ public class EntryPoint
         {
             String fileName = f.getName();
 
-            if (fileName.startsWith(sceneName) && fileName.endsWith(Globals.ROOM_FILE_EXTENSION))
+            if (fileName.startsWith(sceneName + "_room_"))
             {
                 roomInputFiles.add(f);
             }
@@ -210,7 +211,7 @@ public class EntryPoint
         {
             for (File f : roomInputFiles)
             {
-                int roomIndex = getIndexFromRoomName(f.getName().replace(Globals.ROOM_FILE_EXTENSION, ""));
+                int roomIndex = getIndexFromRoomName(f.getName());
                 if (roomIndex == lastRoomAdded + 1)
                 {
                     scene.addRoom(new RomFile(f));
@@ -227,7 +228,7 @@ public class EntryPoint
         for (File f : _sceneFiles)
         {
             // check if the file is a scene
-            if (f.getName().endsWith(Globals.SCENE_FILE_EXTENSION))
+            if (f.getName().endsWith("_scene"))
             {
                 // create a new scene object
                 Scene scene = new Scene(new RomFile(f));

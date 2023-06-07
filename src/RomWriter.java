@@ -86,10 +86,10 @@ public class RomWriter
         }
 
         // make rom file
-        File outRomFile = new File(outPath + "\\" + Globals.ROM_OUT_NAME);
+        File outRomFile = new File(outPath + "/" + Globals.ROM_OUT_NAME);
 
         // make rom file list file
-        File outRomFileListFile = new File(outPath + "\\" + Globals.ROM_FILE_LIST_OUT_NAME);
+        File outRomFileListFile = new File(outPath + "/" + Globals.ROM_FILE_LIST_OUT_NAME);
 
         // write dma table to the start of the rom
         writeDmaTable(outRomData);

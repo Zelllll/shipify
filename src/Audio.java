@@ -113,13 +113,13 @@ public class Audio implements Iterable<RomFile>
         System.arraycopy(_codeTableSoundFont, 0, codeFile, offset, _codeTableSoundFont.length);
         // offset += _codeTableSoundFont.length;
 
-        return new RomFile(codeFile, "code");
+        return new RomFile(codeFile, "code2");
     }
 
     // writes a text file with the offsets of the audio tables within `code`
     public void writeAudioOffsets(String outputPath)
     {
-        File outFile = new File(outputPath + "\\" + Globals.AUDIO_OFFSET_OUT_NAME);
+        File outFile = new File(outputPath + "/" + Globals.AUDIO_OFFSET_OUT_NAME);
 
         // output file list
         try (Writer writer = new BufferedWriter(new OutputStreamWriter(
@@ -127,19 +127,23 @@ public class Audio implements Iterable<RomFile>
         {
             // write sample bank table offset
             writer.write(Globals.CODE_TABLE_SAMPLE_BANK_NAME + " : [code + 0x" +
-                    Integer.toHexString(_codeTableSampleBankOff) + "\n");
+                    Integer.toHexString(_codeTableSampleBankOff) + "]\n");
 
             // write sequence font table offset
             writer.write(Globals.CODE_TABLE_SEQUENCE_FONT_NAME + " : [code + 0x" +
-                    Integer.toHexString(_codeTableSequenceFontOff) + "\n");
+                    Integer.toHexString(_codeTableSequenceFontOff) + "]\n");
 
             // write sample bank table offset
             writer.write(Globals.CODE_TABLE_SEQUENCE_NAME + " : [code + 0x" +
-                    Integer.toHexString(_codeTableSequenceOff) + "\n");
+                    Integer.toHexString(_codeTableSequenceOff) + "]\n");
 
             // write sample bank table offset
             writer.write(Globals.CODE_TABLE_SOUND_FONT_NAME + " : [code + 0x" +
-                    Integer.toHexString(_codeTableSoundFontOff) + "\n");
+                    Integer.toHexString(_codeTableSoundFontOff) + "]\n");
+
+            // write end offset of code
+            writer.write("end" + " : [code + 0x" +
+                    Integer.toHexString(_codeRomFile.getSize()) + "]\n");
         } catch (FileNotFoundException e)
         {
             throw new RuntimeException(e);

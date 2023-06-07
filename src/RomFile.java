@@ -25,15 +25,6 @@ public class RomFile
         // set file name
         _name = file.getName();
 
-        // remove extension from file name
-        for (String extension : Globals.ALL_FILE_TYPES)
-        {
-            if (_name.endsWith(extension))
-            {
-                _name = _name.replace(extension, "");
-            }
-        }
-
         // allocate space for file data
         _fileData = new byte[(int) file.length()];
 
