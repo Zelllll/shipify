@@ -7,6 +7,19 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+/**
+ * PAL Debug ROM text table locations
+ *
+ * base = [code + 0x12E4C0]
+ *
+ * nes at   [base + 0x0]
+ * ger at   [base + 0x4228]
+ * fra at   [base + 0x6338]
+ * staff at [base + 0x8448]
+ *
+ * end = [base + 0x85D0]
+ */
+
 public class Z64Text implements Iterable<RomFile>
 {
     private ArrayList<RomFile> _textRomFiles;
@@ -15,55 +28,30 @@ public class Z64Text implements Iterable<RomFile>
     {
         _textRomFiles = new ArrayList<>();
 
-        // load all text files
-        for (File f : textFiles)
+        // text tables
+        for (String tableName : Globals.TEXT_TABLE_NAMES)
         {
-            String fileName = f.getName();
-
-            // text tables
-            for (String tableName : Globals.TEXT_TABLE_NAMES)
+            for (File f : textFiles)
             {
-                if (fileName.equals(tableName))
+                if (f.getName().equals(tableName))
                 {
                     code.addArray(Globals.fileToByteArr(f), tableName);
                 }
             }
-            // text binaries
-            for (String binName : Globals.TEXT_BIN_NAMES)
+
+        }
+
+        // text binaries
+        for (String binName : Globals.TEXT_BIN_NAMES)
+        {
+            for (File f : textFiles)
             {
-                if (fileName.equals(binName))
+                if (f.getName().equals(binName))
                 {
                     _textRomFiles.add(new RomFile(f));
                 }
             }
-
-            // check if the user is missing a text file
-            if (!allFilesLoaded(code))
-            {
-                throw new RuntimeException("One or more audio files missing! Check documentation.");
-            }
         }
-    }
-
-    // verifies that all text files were loaded successfully
-    private boolean allFilesLoaded(Z64Code code)
-    {
-        // check if all text binaries are loaded
-        if (_textRomFiles.size() != Globals.TEXT_BIN_NAMES.length)
-        {
-            return false;
-        }
-
-        // check if all text tables are loaded
-        for (String name : Globals.AUDIO_TABLE_NAMES)
-        {
-            if (!code.contains(name))
-            {
-                return false;
-            }
-        }
-
-        return true;
     }
 
     /**

@@ -53,11 +53,13 @@ public class Z64Code implements Iterable<RomFile>
     }
 
     private ArrayList<CodeVariable> _dataVariables;
+    private RomFile _romFile;
 
     // constructor
     public Z64Code()
     {
         _dataVariables = new ArrayList<>();
+        _romFile = null;
     }
 
     // adds a new byte array
@@ -138,7 +140,8 @@ public class Z64Code implements Iterable<RomFile>
         }
 
         // generate the RomFile
-        return new RomFile(rawData, Globals.CODE_NAME);
+        _romFile =  new RomFile(rawData, Globals.CODE_NAME);
+        return _romFile;
     }
 
     // writes the offsets relative to `code` of the data variables contained within it
@@ -162,6 +165,11 @@ public class Z64Code implements Iterable<RomFile>
                 writer.write(table.getName() + " : [code + 0x" +
                         Integer.toHexString(table.getOffset()) + "]\n");
             }
+            if (_romFile != null) {
+                writer.write("\nend" + " : [code + 0x" +
+                        Integer.toHexString(getExpectedFileSize()) + "]\n");
+            }
+
         } catch (FileNotFoundException e)
         {
             throw new RuntimeException(e);
