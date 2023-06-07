@@ -9,50 +9,31 @@ import java.util.Iterator;
 
 public class Z64Audio implements Iterable<RomFile>
 {
-    private final String[] AUDIO_TABLE_NAMES = {
-            Globals.CODE_TABLE_SAMPLE_BANK_NAME,
-            Globals.CODE_TABLE_SEQUENCE_FONT_NAME,
-            Globals.CODE_TABLE_SEQUENCE_NAME,
-            Globals.CODE_TABLE_SOUND_FONT_NAME,
-    };
-
-    private static RomFile _audioBankRomFile, _audioTableRomFile, _audioSeqRomFile;
+    private static ArrayList<RomFile> _audioRomFiles;
 
     // constructor
     public Z64Audio(ArrayList<File> audioFiles, Z64Code code)
     {
-        // load all audio code tables into ram
+        _audioRomFiles = new ArrayList<>();
+
+        // load all audio code files
         for (File f : audioFiles)
         {
-            // audio code tables
-            if (f.getName().equals(Globals.CODE_TABLE_SAMPLE_BANK_NAME))
+            String fileName = f.getName();
+
+            // audio tables
+            for (String tableName : Globals.AUDIO_TABLE_NAMES)
             {
-                code.addArray(Globals.fileToByteArr(f), Globals.CODE_TABLE_SAMPLE_BANK_NAME);
-            }
-            else if (f.getName().equals(Globals.CODE_TABLE_SEQUENCE_FONT_NAME))
-            {
-                code.addArray(Globals.fileToByteArr(f), Globals.CODE_TABLE_SEQUENCE_FONT_NAME);
-            }
-            else if (f.getName().equals(Globals.CODE_TABLE_SEQUENCE_NAME))
-            {
-                code.addArray(Globals.fileToByteArr(f), Globals.CODE_TABLE_SEQUENCE_NAME);
-            }
-            else if (f.getName().equals(Globals.CODE_TABLE_SOUND_FONT_NAME))
-            {
-                code.addArray(Globals.fileToByteArr(f), Globals.CODE_TABLE_SOUND_FONT_NAME);
+                if (fileName.equals(tableName)) {
+                    code.addArray(Globals.fileToByteArr(f), tableName);
+                }
             }
             // audio binaries
-            else if (f.getName().equals(Globals.AUDIOBANK_NAME))
+            for (String binName : Globals.AUDIO_BIN_NAMES)
             {
-                _audioBankRomFile = new RomFile(f);
-            }
-            else if (f.getName().equals(Globals.AUDIOTABLE_NAME))
-            {
-                _audioTableRomFile = new RomFile(f);
-            }
-            else if (f.getName().equals(Globals.AUDIOSEQ_NAME))
-            {
-                _audioSeqRomFile = new RomFile(f);
+                if (fileName.equals(binName)) {
+                    _audioRomFiles.add(new RomFile(f));
+                }
             }
         }
 
@@ -66,26 +47,21 @@ public class Z64Audio implements Iterable<RomFile>
     // verifies that all audio files were loaded successfully
     private boolean allFilesLoaded(Z64Code code)
     {
-        RomFile[] audioBinReferences = {
-                _audioBankRomFile,
-                _audioTableRomFile,
-                _audioSeqRomFile,
-        };
+        // check if all audio binaries are loaded
+        if (_audioRomFiles.size() != Globals.AUDIO_BIN_NAMES.length)
+        {
+            return false;
+        }
 
-        for (String name : AUDIO_TABLE_NAMES)
+        // check if all audio tables are loaded
+        for (String name : Globals.AUDIO_TABLE_NAMES)
         {
             if (!code.contains(name))
             {
                 return false;
             }
         }
-        for (RomFile ar : audioBinReferences)
-        {
-            if (ar == null)
-            {
-                return false;
-            }
-        }
+
         return true;
     }
 
@@ -93,40 +69,9 @@ public class Z64Audio implements Iterable<RomFile>
      * RomFile iterator
      */
 
-    // iterator that gives all the audio `RomFile`s
-    private class AudioIterator implements Iterator<RomFile>
-    {
-        private int _index;
-        private RomFile[] _files = {
-                _audioBankRomFile,
-                _audioSeqRomFile,
-                _audioTableRomFile,
-        };
-
-        // constructor
-        public AudioIterator()
-        {
-            _index = 0;
-        }
-
-        // tells the iterator when it is finished
-        public boolean hasNext()
-        {
-            return (_index < _files.length);
-        }
-
-        // returns the next file
-        public RomFile next()
-        {
-            RomFile out = _files[_index];
-            _index++;
-            return out;
-        }
-    }
-
     // public iterator
     public Iterator<RomFile> iterator()
     {
-        return new AudioIterator();
+        return _audioRomFiles.iterator();
     }
 }

@@ -12,7 +12,7 @@ import java.util.regex.Pattern;
 public class Main
 {
     private static String _inputPath, _outputPath;
-    private static ArrayList<File> _sceneFiles, _audioFiles, _objectFiles, _xmlFiles;
+    private static ArrayList<File> _sceneFiles, _audioFiles, _objectFiles, _textFiles, _xmlFiles;
 
     /**
      * Setup
@@ -56,6 +56,7 @@ public class Main
             _sceneFiles = new ArrayList<>();
             _audioFiles = new ArrayList<>();
             _objectFiles = new ArrayList<>();
+            _textFiles = new ArrayList<>();
             _xmlFiles = new ArrayList<>();
 
             // split the array of all files into individual file type arrays
@@ -105,6 +106,15 @@ public class Main
                         _audioFiles.add(f);
                     }
                 }
+
+                // check if it is a text file
+                for (String s : Globals.TEXT_FILE_NAMES)
+                {
+                    if (fileName.equals(s))
+                    {
+                        _textFiles.add(f);
+                    }
+                }
             }
         }
     }
@@ -120,6 +130,7 @@ public class Main
         // build each section of the rom
         buildScenes(rom);
         buildObjects(rom);
+        buildText(rom, code);
         buildAudio(rom, code);
         buildCode(rom, code);
 
@@ -152,16 +163,37 @@ public class Main
     {
         System.out.println("Building audio...");
 
-        // if there are no audio files, do not attempt to instantiate an Audio object
+        // if there are no audio files, do not attempt to instantiate a Z64Audio object
         if (_audioFiles.size() == 0)
         {
             return;
         }
 
-        // instantiate an Audio object and build
+        // instantiate a Z64Audio object and build
         Z64Audio audio = new Z64Audio(_audioFiles, code);
 
         for (RomFile rf : audio)
+        {
+            rom.add(rf);
+        }
+    }
+
+    /**
+     * Text generation
+     */
+    private static void buildText(RomWriter rom, Z64Code code) {
+        System.out.println("Building text...");
+
+        // if there are no text files, do not attempt to instantiate a Z64Audio object
+        if (_textFiles.size() == 0)
+        {
+            return;
+        }
+
+        // instantiate a Z64Text object and build
+        Z64Text text = new Z64Text(_textFiles, code);
+
+        for (RomFile rf : text)
         {
             rom.add(rf);
         }
