@@ -1,3 +1,8 @@
+/**
+ * RomFile.java
+ * Class representing a file within a ROM
+ */
+
 import java.io.*;
 
 public class RomFile

@@ -1,14 +1,19 @@
+/**
+ * Globals.java
+ * Collection of constants and globally accessible helper methods
+ */
+
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.nio.file.Path;
 
 public class Globals
 {
     public static final String AUDIOTABLE_NAME = "Audiotable";
     public static final String AUDIOSEQ_NAME = "Audioseq";
     public static final String AUDIOBANK_NAME = "Audiobank";
+    public static final String CODE_NAME = "code2";
     public static final String CODE_TABLE_SAMPLE_BANK_NAME = "gSampleBankTable";
     public static final String CODE_TABLE_SEQUENCE_FONT_NAME = "gSequenceFontTable";
     public static final String CODE_TABLE_SEQUENCE_NAME = "gSequenceTable";
@@ -28,7 +33,7 @@ public class Globals
 
     public static final String ROM_OUT_NAME = "patch_rom";
     public static final String ROM_FILE_LIST_OUT_NAME = "patch_files.txt";
-    public static final String AUDIO_OFFSET_OUT_NAME = "audio_offsets.txt";
+    public static final String CODE_VARIABLE_OFFSET_LIST_OUT_NAME = "code_table_offsets.txt";
 
     public static final String[] MEME_STRINGS = {
             "Planting leeks...",
@@ -40,8 +45,10 @@ public class Globals
             "Withdrawing $1,000...",
     };
 
-    public static byte[] loadFileByteArr(File file) {
-        byte[] fileRaw = new byte[(int)file.length()];
+    // loads a file into a byte array
+    public static byte[] fileToByteArr(File file)
+    {
+        byte[] fileRaw = new byte[(int) file.length()];
 
         // read the file
         try (DataInputStream stream = new DataInputStream(new FileInputStream(file)))

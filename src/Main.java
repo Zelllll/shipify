@@ -1,10 +1,15 @@
+/**
+ * Main.java
+ * Main program code
+ */
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class EntryPoint
+public class Main
 {
     private static String _inputPath, _outputPath;
     private static ArrayList<File> _sceneFiles, _audioFiles, _objectFiles, _xmlFiles;
@@ -75,7 +80,8 @@ public class EntryPoint
                 continue;
             }
 
-            if (fileName.endsWith(".xml")) {
+            if (fileName.endsWith(".xml"))
+            {
                 // check if file is a xml
                 _xmlFiles.add(f);
             }
@@ -109,10 +115,13 @@ public class EntryPoint
     private static void build()
     {
         RomWriter rom = new RomWriter();
+        Z64Code code = new Z64Code();
 
+        // build each section of the rom
         buildScenes(rom);
         buildObjects(rom);
-        buildAudio(rom);
+        buildAudio(rom, code);
+        buildCode(rom, code);
 
         // print random meme string
         System.out.println(Globals.MEME_STRINGS[(new Random()).nextInt(Globals.MEME_STRINGS.length)]);
@@ -121,27 +130,10 @@ public class EntryPoint
         rom.saveRom(_outputPath);
     }
 
-    private static void buildScenes(RomWriter rom)
-    {
-        System.out.println("Building scenes...");
-
-        ArrayList<Scene> sceneList = genSceneList();
-
-        // add all the scenes and rooms to the rom
-        for (Scene scene : sceneList)
-        {
-            // add file to the rom
-            for (RomFile romFile : scene)
-            {
-                rom.add(romFile);
-            }
-
-            // generate xml
-            SceneXmlGenerator xmlGenerator = new SceneXmlGenerator(scene);
-            xmlGenerator.saveXml(_outputPath);
-        }
-    }
-
+    /**
+     * Object generation
+     */
+    // builds the object section of the ROM
     private static void buildObjects(RomWriter rom)
     {
         System.out.println("Building objects...");
@@ -152,7 +144,11 @@ public class EntryPoint
         }
     }
 
-    private static void buildAudio(RomWriter rom)
+    /**
+     * Audio generation
+     */
+    // builds the audio section of the ROM
+    private static void buildAudio(RomWriter rom, Z64Code code)
     {
         System.out.println("Building audio...");
 
@@ -163,8 +159,8 @@ public class EntryPoint
         }
 
         // instantiate an Audio object and build
-        Audio audio = new Audio(_audioFiles);
-        audio.writeAudioOffsets(_outputPath);
+        Z64Audio audio = new Z64Audio(_audioFiles, code);
+
         for (RomFile rf : audio)
         {
             rom.add(rf);
@@ -172,12 +168,75 @@ public class EntryPoint
     }
 
     /**
+     * Code generation
+     */
+    // builds the code section of the ROM
+    // note that this should be the last step in the build process
+    private static void buildCode(RomWriter rom, Z64Code code)
+    {
+        for (RomFile romFile : code)
+        {
+            rom.add(romFile);
+        }
+
+        code.writeDataOffsets(_outputPath);
+    }
+
+    /**
      * Scene generation
      */
-    // sourced from StackOverflow
-    // https://stackoverflow.com/questions/3083154/how-can-i-get-the-last-integer-56-from-string-like-ra12ke43sh56
+    // builds the scene section of the ROM
+    private static void buildScenes(RomWriter rom)
+    {
+        System.out.println("Building scenes...");
+
+        ArrayList<Z64Scene> sceneList = genSceneList();
+
+        // add all the scenes and rooms to the rom
+        for (Z64Scene scene : sceneList)
+        {
+            // add file to the rom
+            for (RomFile romFile : scene)
+            {
+                rom.add(romFile);
+            }
+
+            // generate xml
+            scene.saveXml(_outputPath);
+        }
+    }
+
+    // generate the scene list
+    private static ArrayList<Z64Scene> genSceneList()
+    {
+        ArrayList<Z64Scene> out = new ArrayList<>();
+
+        for (File f : _sceneFiles)
+        {
+            // check if the file is a scene
+            if (f.getName().endsWith("_scene"))
+            {
+                // create a new scene object
+                Z64Scene scene = new Z64Scene(new RomFile(f));
+
+                // add all rooms
+                addRoomsToScene(scene);
+
+                // add scene object to the output list
+                out.add(scene);
+            }
+        }
+
+        return out;
+    }
+
+    // gets the index contained in a room file name
+    // so (getIndexFromRoomName("jabu_jabu_room_2") == 2), (getIndexFromRoomName("jabu_jabu_room_25") == 25), etc.
     private static int getIndexFromRoomName(String roomName)
     {
+        // sourced from StackOverflow
+        // https://stackoverflow.com/questions/3083154/how-can-i-get-the-last-integer-56-from-string-like-ra12ke43sh56
+
         Pattern p = Pattern.compile("[0-9]+$");
         Matcher m = p.matcher(roomName);
         if (m.find())
@@ -190,7 +249,8 @@ public class EntryPoint
         }
     }
 
-    private static void addRoomsToScene(Scene scene)
+    // adds all of a scene's rooms
+    private static void addRoomsToScene(Z64Scene scene)
     {
         String sceneName = scene.getName();
         ArrayList<File> roomInputFiles = new ArrayList<>();
@@ -219,28 +279,5 @@ public class EntryPoint
                 }
             }
         }
-    }
-
-    private static ArrayList<Scene> genSceneList()
-    {
-        ArrayList<Scene> out = new ArrayList<>();
-
-        for (File f : _sceneFiles)
-        {
-            // check if the file is a scene
-            if (f.getName().endsWith("_scene"))
-            {
-                // create a new scene object
-                Scene scene = new Scene(new RomFile(f));
-
-                // add all rooms
-                addRoomsToScene(scene);
-
-                // add scene object to the output list
-                out.add(scene);
-            }
-        }
-
-        return out;
     }
 }

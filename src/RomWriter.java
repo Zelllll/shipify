@@ -1,3 +1,8 @@
+/**
+ * RomWriter.java
+ * Class representing a full SoH patch ROM
+ */
+
 import java.io.*;
 import java.util.ArrayList;
 
@@ -5,6 +10,7 @@ public class RomWriter
 {
     private ArrayList<RomFile> _romFiles;
 
+    // constructor
     public RomWriter()
     {
         _romFiles = new ArrayList<RomFile>();
@@ -68,6 +74,7 @@ public class RomWriter
         System.arraycopy(romFile.getData(), 0, romOut, romFile.getOffset(), romFile.getSize());
     }
 
+    // saves patch ROM to disk
     public void saveRom(String outPath)
     {
         // list of files in order of their location in the output rom
