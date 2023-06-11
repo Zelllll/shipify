@@ -76,8 +76,12 @@ public class Globals
     // code
     public static final String CODE_NAME = "code_patch";
 
-    public static final int ROM_BASE = 0x20;
+    // objects
+    public static final int GFX_CMD_SIZE = 8;
 
+    // rom writing
+
+    public static final int ROM_BASE = 0x20;
     public static final String ROM_OUT_NAME = "patch_rom";
     public static final String ROM_FILE_LIST_OUT_NAME = "patch_files.txt";
     public static final String CODE_VARIABLE_OFFSET_LIST_OUT_NAME = "code_table_offsets.txt";

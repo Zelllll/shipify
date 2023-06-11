@@ -149,9 +149,20 @@ public class Main
     {
         System.out.println("Building objects...");
 
+        // if there are no object files, do not attempt to instantiate a Z64Object object
+        if (_objectFiles.size() == 0)
+        {
+            return;
+        }
+
         for (File f : _objectFiles)
         {
-            rom.add(new RomFile(f));
+            Z64Object newObject = new Z64Object(f);
+
+            for (RomFile rf : newObject)
+            {
+                rom.add(rf);
+            }
         }
     }
 
@@ -181,7 +192,8 @@ public class Main
     /**
      * Text generation
      */
-    private static void buildText(RomWriter rom, Z64Code code) {
+    private static void buildText(RomWriter rom, Z64Code code)
+    {
         System.out.println("Building text...");
 
         // if there are no text files, do not attempt to instantiate a Z64Audio object
