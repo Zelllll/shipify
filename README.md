@@ -83,7 +83,7 @@ Like with audio, we will need to edit [`message_data_static`](https://github.com
 Essentially, all `CodeOffset`'s in the xml will be replaced with the value of `sNesMessageEntryTable` in `code_table_offsets.txt`, except for the `CodeOffset` after `staff_message_data_static`, which should be replaced with the value of `sStaffMessageEntryTable` within `code_table_offsets.txt`.
 The `LangOffset` after `ger_message_data_static` corresponds to the value of `sGerMessageEntryTable`, and the `LangOffset` after `fra_message_data_static` corresponds to `sFraMessageEntryTable` in `code_table_offsets.txt`.
 
-
+Once you regenerate your `.otr`, all of the text in your hack should be ported.
 
 ## Objects
 Any custom objects that you would like to port must be included in the input directory, and have the `object_` prefix.
