@@ -78,7 +78,7 @@ sStaffMessageEntryTable
 ```
 It should be noted that `ger_message_data_static`, and `fra_message_data_static` are optional, and should only be included if the French or German languages were modified in the hack you are porting. All other listed files and tables are required.
 
-Like with audio, we will need to edit [`message_data_static`](https://github.com/HarbourMasters/Shipwright/blob/develop/soh/assets/xml/GC_MQ_D/text/message_data_static.xml) within Ship of Harkinian using the values included in the generated `code_table_offsets.txt`.
+Like with audio, we will need to edit [`message_data_static.xml`](https://github.com/HarbourMasters/Shipwright/blob/develop/soh/assets/xml/GC_MQ_D/text/message_data_static.xml) within Ship of Harkinian using the values included in the generated `code_table_offsets.txt`.
 
 Essentially, all `CodeOffset`'s in the xml will be replaced with the value of `sNesMessageEntryTable` in `code_table_offsets.txt`, except for the `CodeOffset` after `staff_message_data_static`, which should be replaced with the value of `sStaffMessageEntryTable` within `code_table_offsets.txt`.
 The `LangOffset` after `ger_message_data_static` corresponds to the value of `sGerMessageEntryTable`, and the `LangOffset` after `fra_message_data_static` corresponds to `sFraMessageEntryTable` in `code_table_offsets.txt`.
