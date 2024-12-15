@@ -6,44 +6,36 @@
 import java.io.*;
 import java.util.ArrayList;
 
-public class RomWriter
-{
+public class RomWriter {
     private ArrayList<RomFile> _romFiles;
 
     // constructor
-    public RomWriter()
-    {
+    public RomWriter() {
         _romFiles = new ArrayList<RomFile>();
     }
 
-    public void add(RomFile romFile)
-    {
+    public void add(RomFile romFile) {
         _romFiles.add(romFile);
     }
 
-    private int getDmaTableLength()
-    {
+    private int getDmaTableLength() {
         return 16 * (_romFiles.size() + 1);
     }
 
-    private int setOffsets()
-    {
+    private int setOffsets() {
         int curOffset = Globals.ROM_BASE + getDmaTableLength();
 
-        for (RomFile romFile : _romFiles)
-        {
+        for (RomFile romFile : _romFiles) {
             romFile.setOffset(curOffset);
             curOffset += romFile.getSize();
         }
         return curOffset;
     }
 
-    private void writeDmaTable(byte[] out)
-    {
+    private void writeDmaTable(byte[] out) {
         int offset = Globals.ROM_BASE;
 
-        for (RomFile file : _romFiles)
-        {
+        for (RomFile file : _romFiles) {
             int fileStart = file.getOffset();
             int fileEnd = fileStart + file.getSize();
 
@@ -60,8 +52,7 @@ public class RomWriter
             out[offset + 4 + 3] = (byte) (fileEnd & 0xFF);
 
             // zero the last four bytes of the entry
-            for (int j = 0; j < 4; j++)
-            {
+            for (int j = 0; j < 4; j++) {
                 out[offset + 12 + j] = 0;
             }
 
@@ -69,14 +60,12 @@ public class RomWriter
         }
     }
 
-    private void writeFileToRomArray(byte[] romOut, RomFile romFile)
-    {
+    private void writeFileToRomArray(byte[] romOut, RomFile romFile) {
         System.arraycopy(romFile.getData(), 0, romOut, romFile.getOffset(), romFile.getSize());
     }
 
     // saves patch ROM to disk
-    public void saveRom(String outPath)
-    {
+    public void saveRom(String outPath) {
         // list of files in order of their location in the output rom
         ArrayList<String> romFileNameList = new ArrayList<>();
 
@@ -87,8 +76,7 @@ public class RomWriter
         byte[] outRomData = new byte[romSize];
 
         // fill first 0x20 bytes of rom with zeros
-        for (int i = 0; i < Globals.ROM_BASE; i++)
-        {
+        for (int i = 0; i < Globals.ROM_BASE; i++) {
             outRomData[i] = 0;
         }
 
@@ -102,40 +90,31 @@ public class RomWriter
         writeDmaTable(outRomData);
 
         // add each file to the output rom
-        for (RomFile romFile : _romFiles)
-        {
+        for (RomFile romFile : _romFiles) {
             writeFileToRomArray(outRomData, romFile);
             romFileNameList.add(romFile.getName());
         }
 
         // output rom
-        try (FileOutputStream outputStream = new FileOutputStream(outRomFile))
-        {
+        try (FileOutputStream outputStream = new FileOutputStream(outRomFile)) {
             outputStream.write(outRomData);
-        } catch (FileNotFoundException e)
-        {
+        } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
-        } catch (IOException e)
-        {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
         // output file list
         try (Writer writer = new BufferedWriter(new OutputStreamWriter(
-                new FileOutputStream(outRomFileListFile), "utf-8")))
-        {
-            for (String romFileName : romFileNameList)
-            {
+                new FileOutputStream(outRomFileListFile), "utf-8"))) {
+            for (String romFileName : romFileNameList) {
                 writer.write(romFileName + "\n");
             }
-        } catch (FileNotFoundException e)
-        {
+        } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
-        } catch (UnsupportedEncodingException e)
-        {
+        } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
-        } catch (IOException e)
-        {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }

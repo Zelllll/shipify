@@ -5,8 +5,7 @@
 
 import java.io.*;
 
-public class RomFile
-{
+public class RomFile {
     private String _name;
     private byte[] _fileData;
     private int _offset;
@@ -22,8 +21,7 @@ public class RomFile
         _fileData = rawFile;
     }
 
-    public RomFile(File file)
-    {
+    public RomFile(File file) {
         // set default offset
         _offset = 0;
 
@@ -34,41 +32,34 @@ public class RomFile
         _fileData = new byte[(int) file.length()];
 
         // read the file
-        try (DataInputStream stream = new DataInputStream(new FileInputStream(file)))
-        {
+        try (DataInputStream stream = new DataInputStream(new FileInputStream(file))) {
             // read the file into ram
             stream.readFully(_fileData);
-        } catch (IOException e)
-        {
+        } catch (IOException e) {
             // catch exception if the file isn't readable
             e.printStackTrace();
         }
     }
 
     // returns the data of the rom file in ram
-    public byte[] getData()
-    {
+    public byte[] getData() {
         return _fileData;
     }
 
     // returns the name of the rom file
-    public String getName()
-    {
+    public String getName() {
         return _name;
     }
 
-    public int getOffset()
-    {
+    public int getOffset() {
         return _offset;
     }
 
-    public void setOffset(int offset)
-    {
+    public void setOffset(int offset) {
         _offset = offset;
     }
 
-    public int getSize()
-    {
+    public int getSize() {
         return _fileData.length;
     }
 }

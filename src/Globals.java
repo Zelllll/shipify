@@ -8,8 +8,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 
-public class Globals
-{
+public class Globals {
     // audio
     public static final String AUDIOTABLE_NAME = "Audiotable";
     public static final String AUDIOSEQ_NAME = "Audioseq";
@@ -18,6 +17,7 @@ public class Globals
     public static final String CODE_TABLE_SEQUENCE_FONT_NAME = "gSequenceFontTable";
     public static final String CODE_TABLE_SEQUENCE_NAME = "gSequenceTable";
     public static final String CODE_TABLE_SOUND_FONT_NAME = "gSoundFontTable";
+    public static final String CODE_TABLE_ENTRANCE_NAME = "gEntranceTable";
 
     public static final String[] AUDIO_FILE_NAMES = {
             AUDIOTABLE_NAME,
@@ -79,8 +79,11 @@ public class Globals
     // objects
     public static final int GFX_CMD_SIZE = 8;
 
-    // rom writing
+    // entrance table
+    public static final int ENTRANCE_ENTRY_SIZE = 4;
+    public static final String ENTRANCE_TABLE_HEADER_OUT_NAME = "entrance_table.h";
 
+    // rom writing
     public static final int ROM_BASE = 0x20;
     public static final String ROM_OUT_NAME = "patch_rom";
     public static final String ROM_FILE_LIST_OUT_NAME = "patch_files.txt";
@@ -94,20 +97,18 @@ public class Globals
             "Banning Kenix...",
             "Arguing about uintptr_t...",
             "Withdrawing $1,000...",
+            "Decompiling Majora's Mask a year early...",
     };
 
     // loads a file into a byte array
-    public static byte[] fileToByteArr(File file)
-    {
+    public static byte[] fileToByteArr(File file) {
         byte[] fileRaw = new byte[(int) file.length()];
 
         // read the file
-        try (DataInputStream stream = new DataInputStream(new FileInputStream(file)))
-        {
+        try (DataInputStream stream = new DataInputStream(new FileInputStream(file))) {
             // read the file into ram
             stream.readFully(fileRaw);
-        } catch (IOException e)
-        {
+        } catch (IOException e) {
             // catch exception if the file isn't readable
             e.printStackTrace();
         }

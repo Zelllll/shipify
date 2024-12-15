@@ -7,13 +7,11 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-public class Z64Object implements Iterable<RomFile>
-{
+public class Z64Object implements Iterable<RomFile> {
     private ArrayList<RomFile> _objectRomFiles = new ArrayList<>();
 
     // constructor
-    public Z64Object(File f)
-    {
+    public Z64Object(File f) {
         String name = f.getName();
         byte[] objectData = Globals.fileToByteArr(f);
         objectData = patchBranchLists(objectData, name);
@@ -25,20 +23,17 @@ public class Z64Object implements Iterable<RomFile>
      */
     // finds all instances of a gsSPBranchList() command within an object
     // assumes object is in segment 6
-    private ArrayList<Integer> findBranchLists(byte[] objectData)
-    {
+    private ArrayList<Integer> findBranchLists(byte[] objectData) {
         ArrayList<Integer> branchListCmdOffsets = new ArrayList<>();
 
-        for (int i = Globals.GFX_CMD_SIZE; i < objectData.length; i += Globals.GFX_CMD_SIZE)
-        {
+        for (int i = Globals.GFX_CMD_SIZE; i < objectData.length; i += Globals.GFX_CMD_SIZE) {
             // looks for any gsSPBranchList() commands referencing data in segment 6
             // this is not a perfect check by any means, but it will work for the time being
             if (((int) objectData[i] & 0xFF) == 0xDE &&
                     ((int) objectData[i + 1] & 0xFF) == 0x01 &&
                     ((int) objectData[i + 2] & 0xFF) == 0x00 &&
                     ((int) objectData[i + 3] & 0xFF) == 0x00 &&
-                    ((int) objectData[i + 4] & 0xFF) == 0x06)
-            {
+                    ((int) objectData[i + 4] & 0xFF) == 0x06) {
                 branchListCmdOffsets.add(i);
             }
         }
@@ -46,22 +41,18 @@ public class Z64Object implements Iterable<RomFile>
     }
 
     // patches out gsSPBranchList() commands
-    private byte[] patchBranchLists(byte[] objectData, String name)
-    {
+    private byte[] patchBranchLists(byte[] objectData, String name) {
         ArrayList<Integer> branchListCmdOffsets = findBranchLists(objectData);
         ArrayList<Byte> appendedData = new ArrayList<>();
 
-        if (branchListCmdOffsets.size() == 0)
-        {
+        if (branchListCmdOffsets.size() == 0) {
             return objectData;
         }
 
         // modify displaylists to remove gsSPBranchList() command
-        for (int offset : branchListCmdOffsets)
-        {
+        for (int offset : branchListCmdOffsets) {
             // avoid going out of range
-            if (offset < Globals.GFX_CMD_SIZE || offset > objectData.length - Globals.GFX_CMD_SIZE)
-            {
+            if (offset < Globals.GFX_CMD_SIZE || offset > objectData.length - Globals.GFX_CMD_SIZE) {
                 continue;
             }
 
@@ -109,8 +100,7 @@ public class Z64Object implements Iterable<RomFile>
             oldCmd[(Globals.GFX_CMD_SIZE * 2) + 7] = (byte) ((int) 0x00 & 0xFF);
 
             // write old commands to appended section
-            for (byte b : oldCmd)
-            {
+            for (byte b : oldCmd) {
                 appendedData.add(b);
             }
 
@@ -123,8 +113,7 @@ public class Z64Object implements Iterable<RomFile>
         byte[] patchedObjectData = new byte[objectData.length + appendedData.size()];
         System.arraycopy(objectData, 0, patchedObjectData, 0, objectData.length);
         int offset = objectData.length;
-        for (byte b : appendedData)
-        {
+        for (byte b : appendedData) {
             patchedObjectData[offset] = b;
             offset++;
         }
@@ -136,8 +125,7 @@ public class Z64Object implements Iterable<RomFile>
     /**
      * RomFile iteration
      */
-    public Iterator<RomFile> iterator()
-    {
+    public Iterator<RomFile> iterator() {
         return _objectRomFiles.iterator();
     }
 }

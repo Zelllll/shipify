@@ -4,50 +4,40 @@
  */
 
 import java.io.*;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-public class Z64Code implements Iterable<RomFile>
-{
-    private class CodeVariable
-    {
+public class Z64Code implements Iterable<RomFile> {
+    private class CodeVariable {
         private byte[] _tableData;
         private String _tableName;
         private int _offset;
 
         // constructor
-        public CodeVariable(byte[] data, String name)
-        {
+        public CodeVariable(byte[] data, String name) {
             _tableData = data;
             _tableName = name;
             _offset = 0;
         }
 
         // returns the name of the byte array
-        public String getName()
-        {
+        public String getName() {
             return _tableName;
         }
 
-
         // returns the data of the byte array
-
-        public byte[] getData()
-        {
+        public byte[] getData() {
             return _tableData;
         }
 
-
         // sets the offset of the array
-        public void setOffset(int offset)
-        {
+        public void setOffset(int offset) {
             _offset = offset;
         }
 
-
         // gets the offset of the array
-        public int getOffset()
-        {
+        public int getOffset() {
             return _offset;
         }
     }
@@ -56,31 +46,25 @@ public class Z64Code implements Iterable<RomFile>
     private RomFile _romFile;
 
     // constructor
-    public Z64Code()
-    {
+    public Z64Code() {
         _dataVariables = new ArrayList<>();
         _romFile = null;
     }
 
     // adds a new byte array
-    public void addArray(CodeVariable newArray)
-    {
+    public void addArray(CodeVariable newArray) {
         _dataVariables.add(newArray);
     }
 
     // adds a new array to code
-    public void addArray(byte[] data, String name)
-    {
+    public void addArray(byte[] data, String name) {
         _dataVariables.add(new CodeVariable(data, name));
     }
 
     // checks if code currently contains a variable with the specified name
-    public boolean contains(String variableName)
-    {
-        for (CodeVariable var : _dataVariables)
-        {
-            if (var.getName().equals(variableName))
-            {
+    public boolean contains(String variableName) {
+        for (CodeVariable var : _dataVariables) {
+            if (var.getName().equals(variableName)) {
                 return true;
             }
         }
@@ -88,12 +72,10 @@ public class Z64Code implements Iterable<RomFile>
     }
 
     // gets the expected size of code
-    private int getExpectedFileSize()
-    {
+    private int getExpectedFileSize() {
         int size = 0;
 
-        for (CodeVariable var : _dataVariables)
-        {
+        for (CodeVariable var : _dataVariables) {
             size += var.getData().length;
         }
 
@@ -102,13 +84,11 @@ public class Z64Code implements Iterable<RomFile>
 
     // generates the RomFile for code, and returns a reference to it,
     // and sets the offsets of each data variable
-    private RomFile genRomFile()
-    {
+    private RomFile genRomFile() {
         int fileSize = getExpectedFileSize();
 
         // do not build the file if no tables are being added
-        if (fileSize == 0)
-        {
+        if (fileSize == 0) {
             byte[] emptyArr = new byte[16];
             return new RomFile(emptyArr, Globals.CODE_NAME);
         }
@@ -118,14 +98,12 @@ public class Z64Code implements Iterable<RomFile>
         int offset = 0;
 
         // add all the tables to the data
-        for (CodeVariable var : _dataVariables)
-        {
+        for (CodeVariable var : _dataVariables) {
             byte[] tableData = var.getData();
             int tableLength = tableData.length;
 
             // sanity check
-            if (offset > fileSize)
-            {
+            if (offset > fileSize) {
                 throw new RuntimeException("Something went wrong when generating code");
             }
 
@@ -140,16 +118,14 @@ public class Z64Code implements Iterable<RomFile>
         }
 
         // generate the RomFile
-        _romFile =  new RomFile(rawData, Globals.CODE_NAME);
+        _romFile = new RomFile(rawData, Globals.CODE_NAME);
         return _romFile;
     }
 
     // writes the offsets relative to `code` of the data variables contained within it
-    public void writeDataOffsets(String outputPath)
-    {
+    public void writeDataOffsets(String outputPath) {
         // code file is empty
-        if (genRomFile() == null)
-        {
+        if (genRomFile() == null) {
             return;
         }
 
@@ -158,10 +134,8 @@ public class Z64Code implements Iterable<RomFile>
 
         // output file list
         try (Writer writer = new BufferedWriter(new OutputStreamWriter(
-                new FileOutputStream(outFile), "utf-8")))
-        {
-            for (CodeVariable table : _dataVariables)
-            {
+                Files.newOutputStream(outFile.toPath()), "utf-8"))) {
+            for (CodeVariable table : _dataVariables) {
                 writer.write(table.getName() + " : [code + 0x" +
                         Integer.toHexString(table.getOffset()) + "]\n");
             }
@@ -170,14 +144,7 @@ public class Z64Code implements Iterable<RomFile>
                         Integer.toHexString(getExpectedFileSize()) + "]\n");
             }
 
-        } catch (FileNotFoundException e)
-        {
-            throw new RuntimeException(e);
-        } catch (UnsupportedEncodingException e)
-        {
-            throw new RuntimeException(e);
-        } catch (IOException e)
-        {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
@@ -187,33 +154,28 @@ public class Z64Code implements Iterable<RomFile>
      */
 
     // iterator that gives all the code `RomFile`s (only a single one)
-    private class CodeIterator implements Iterator<RomFile>
-    {
+    private class CodeIterator implements Iterator<RomFile> {
         private boolean _done;
 
         // constructor
-        public CodeIterator()
-        {
+        public CodeIterator() {
             _done = false;
         }
 
         // tells the iterator when it is finished
-        public boolean hasNext()
-        {
+        public boolean hasNext() {
             return !_done;
         }
 
         // returns the next file
-        public RomFile next()
-        {
+        public RomFile next() {
             _done = true;
             return genRomFile();
         }
     }
 
     // public iterator
-    public Iterator<RomFile> iterator()
-    {
+    public Iterator<RomFile> iterator() {
         return new CodeIterator();
     }
 }
