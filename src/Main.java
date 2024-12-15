@@ -14,7 +14,7 @@ import java.util.regex.Pattern;
 public class Main {
     private static String _inputPath, _outputPath;
     private static ArrayList<File> _sceneFiles, _audioFiles, _objectFiles, _textFiles, _xmlFiles;
-    private static File _entranceTableFile;
+    private static File _entranceTableFile, _entranceCutsceneTableFile;
 
     /**
      * Setup
@@ -55,6 +55,7 @@ public class Main {
             _textFiles = new ArrayList<>();
             _xmlFiles = new ArrayList<>();
             _entranceTableFile = null;
+            _entranceCutsceneTableFile = null;
 
             // split the array of all files into individual file type arrays
             splitFileTypes(files);
@@ -77,6 +78,8 @@ public class Main {
 
             if (fileName.equals(Globals.CODE_TABLE_ENTRANCE_NAME)) {
                 _entranceTableFile = f;
+            } else if (fileName.equals(Globals.CODE_TABLE_ENTRANCE_CS_NAME)) {
+                _entranceCutsceneTableFile = f;
             } else if (fileName.endsWith(".xml")) {
                 // check if file is a xml
                 _xmlFiles.add(f);
@@ -118,6 +121,7 @@ public class Main {
         buildAudio(rom, code);
         buildCode(rom, code);
         buildEntranceTable();
+        buildEntranceCutsceneTable();
 
         // print random meme string
         System.out.println(Globals.MEME_STRINGS[(new Random()).nextInt(Globals.MEME_STRINGS.length)]);
@@ -202,6 +206,7 @@ public class Main {
     /**
      * Entrance table header generation
      */
+    // builds the entire entrance table to a header file
     private static void buildEntranceTable() {
         System.out.println("Building entrance table...");
 
@@ -226,11 +231,12 @@ public class Main {
         }
     }
 
+    // generate an individual entrance table line
     private static String formatEntranceEntry(byte[] entranceTableData, int offset) {
         int entranceIndex = offset / Globals.ENTRANCE_ENTRY_SIZE;
         int sceneIndex = ((int) entranceTableData[offset + 0] & 0xFF);
         int spawnIndex = ((int) entranceTableData[offset + 1] & 0xFF);
-        int flagsPacked = (((int) entranceTableData[offset + 2] & 0xFF) << 8) | ((int) entranceTableData[offset + 3] & 0xFF);
+        int flagsPacked = Globals.readShortFromByteArray(entranceTableData, offset + 2);
 
         // unpack flags
         boolean bgmFlag = ((flagsPacked >> 15) & 1) == 1;
@@ -269,6 +275,57 @@ public class Main {
         out += titleFlag + ", ";
         out += transitionEnd + ", ";
         out += transitionStart + ")";
+
+        return out;
+    }
+
+
+    /**
+     * Entrance cutscene table generation
+     */
+    // build the entire entrance cutscene table to a txt file
+    private static void buildEntranceCutsceneTable() {
+        System.out.println("Building entrance cutscene table...");
+
+        if (_entranceCutsceneTableFile == null) {
+            return;
+        }
+
+        // create entrance cutscene table output file
+        File outFile = new File(_outputPath + "/" + Globals.ENTRANCE_CS_TABLE_OUT_NAME);
+
+        try (Writer writer = new BufferedWriter(new OutputStreamWriter(
+                Files.newOutputStream(outFile.toPath()), StandardCharsets.UTF_8))) {
+            // open entrance cutscene table as byte array
+            byte[] entranceCsTableData = Globals.fileToByteArr(_entranceCutsceneTableFile);
+
+            writer.write("EntranceCutscene " + Globals.CODE_TABLE_ENTRANCE_CS_NAME + "[] = {\n");
+
+            // write each line of the entrance cutscene table file
+            for (int i = 0; i < entranceCsTableData.length; i += Globals.ENTRANCE_CS_ENTRY_SIZE) {
+                writer.write(formatEntranceCutsceneEntry(entranceCsTableData, i) + "\n");
+            }
+
+            writer.write("};\n");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    // generates an individual line of the entrance cutscene table
+    private static String formatEntranceCutsceneEntry(byte[] entranceCsTableData, int offset) {
+        // get arguments from table entry
+        String entrance = DecompEnums.DECOMP_ENTRANCE_INDEX_NAMES[Globals.readShortFromByteArray(entranceCsTableData, offset)];
+        int ageRestriction = ((int)entranceCsTableData[offset + 2] & 0xFF);
+        int flag = ((int)entranceCsTableData[offset + 3] & 0xFF);
+        int segmentAddress = Globals.readIntFromByteArray(entranceCsTableData, offset + 4);
+
+        // Format output string
+        String out = "    {";
+        out += entrance + ", ";
+        out += ageRestriction + ", ";
+        out += "0x" + Integer.toHexString(flag) + ", ";
+        out += "\"__OTR__scenes/shared/???/???" +  Integer.toHexString(segmentAddress)+ "???\"},";
 
         return out;
     }

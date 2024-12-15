@@ -14,7 +14,6 @@ import java.util.Set;
 public class Z64Scene implements Iterable<RomFile> {
     private RomFile _sceneRomFile;
     private ArrayList<RomFile> _roomRomFiles;
-    private ArrayList<CamData> _camDataList;
     private Set<Integer> _sceneHeaderOffsetList;
     private Set<Integer> _collisionHeaderOffsetList;
 
@@ -22,12 +21,11 @@ public class Z64Scene implements Iterable<RomFile> {
     public Z64Scene(RomFile scene) {
         _sceneRomFile = scene;
         _roomRomFiles = new ArrayList<>();
-        _camDataList = new ArrayList<>();
         _sceneHeaderOffsetList = new HashSet<>();
         _collisionHeaderOffsetList = new HashSet<>();
 
-        findHeaderOffsets();
-        setCollisionLists();
+        getAlternateSceneHeaderOffsets();
+        getCollisionHeaderOffsets();
         fixSharpOcarinaWaterboxPointers();
     }
 
@@ -39,15 +37,8 @@ public class Z64Scene implements Iterable<RomFile> {
                 (((int) arr[offsetInArr + 3] & 0xFF));
     }
 
-    private int readInt(byte[] arr, int offsetInArr) {
-        return ((((int) arr[offsetInArr + 0] & 0xFF) << 24) |
-                ((int) arr[offsetInArr + 1] & 0xFF) << 16) |
-                (((int) arr[offsetInArr + 2] & 0xFF) << 8) |
-                (((int) arr[offsetInArr + 3] & 0xFF));
-    }
-
     // finds the addresses of all the scene headers in the scene
-    private void findHeaderOffsets() {
+    private void getAlternateSceneHeaderOffsets() {
         byte[] sceneData = _sceneRomFile.getData();
         int altHeaderListOffset = getHeaderCmdOffset(0, 0x18);
 
@@ -88,7 +79,7 @@ public class Z64Scene implements Iterable<RomFile> {
         byte[] sceneData = _sceneRomFile.getData();
 
         for (Integer colHeaderOffset : _collisionHeaderOffsetList) {
-            int numWaterboxes = readInt(sceneData, colHeaderOffset + 0x24);
+            int numWaterboxes = Globals.readIntFromByteArray(sceneData, colHeaderOffset + 0x24);
             if (numWaterboxes == 0) {
                 // set null pointer
                 sceneData[colHeaderOffset + 0x28 + 0] = 0;
@@ -101,26 +92,15 @@ public class Z64Scene implements Iterable<RomFile> {
 
     // sets the list of CamData and Collision elements
     // currently designed only for SharpOcarina maps
-    private void setCollisionLists() {
+    private void getCollisionHeaderOffsets() {
         byte[] sceneData = _sceneRomFile.getData();
 
         for (Integer header : _sceneHeaderOffsetList) {
             int collisionHeaderCmdOffset = getHeaderCmdOffset(header, 0x03);
             int collisionHeaderOffset = segAddrToOffset(sceneData, collisionHeaderCmdOffset + 4);
-            int camDataOffset = segAddrToOffset(sceneData, collisionHeaderOffset + 0x20);
-            int tempOffset = camDataOffset;
-            int nCams = 0;
 
             // add collision header to list
             _collisionHeaderOffsetList.add(collisionHeaderOffset);
-
-            // now that we have the address of the cam data, guess the length of it
-            while (sceneData[tempOffset] == 0x00 && sceneData[tempOffset + 0x4] == 0x02) {
-                tempOffset += 0x08;
-                nCams++;
-            }
-
-            _camDataList.add(new CamData(camDataOffset, nCams));
         }
     }
 
@@ -179,23 +159,10 @@ public class Z64Scene implements Iterable<RomFile> {
                 "\t</File>\n";
     }
 
-    private String roomXmlString(RomFile room) {
-        return "\t<File Name=\"" + room.getName() + "\" Segment=\"3\">\n" +
+    private String roomXmlString(RomFile room, String nodes) {
+        return "\t<File Name=\"" + room.getName() + "\" Segment=\"3\">\n" + nodes +
                 "\t\t<Room Name=\"" + room.getName() + "\" Offset=\"0x0\"/>\n" +
                 "\t</File>\n";
-    }
-
-    private String camDataXmlString(int offset, int count, String name) {
-        return "\t\t<CamData Name=\"" + name +
-                "\" Offset=\"0x" + Integer.toHexString(offset) +
-                "\" Count=\"" + count +
-                "\"/>\n";
-    }
-
-    private String collisionXmlString(int offset, String name) {
-        return "\t\t<Collision Name=\"" + name +
-                "\" Offset=\"0x" + Integer.toHexString(offset) +
-                "\"/>\n";
     }
 
     public void saveXml(String outPath) {
@@ -204,24 +171,14 @@ public class Z64Scene implements Iterable<RomFile> {
 
         try (Writer writer = new BufferedWriter(new OutputStreamWriter(
                 Files.newOutputStream(outXmlFile.toPath()), StandardCharsets.UTF_8))) {
-            String sceneNodes = "";
-
-            for (Z64Scene.CamData camData : _camDataList) {
-                sceneNodes += camDataXmlString(camData.getOffset(), camData.getNumCamData(),
-                        getName() + "_camData_" + Integer.toHexString(camData.getOffset()));
-            }
-
-            for (Integer colHeaderOffset : _collisionHeaderOffsetList) {
-                sceneNodes += collisionXmlString(colHeaderOffset, getName() + "_collision_" + Integer.toHexString(colHeaderOffset));
-            }
 
             // write the scene XML string, including any extra nodes like CamData
             writer.write("<Root>\n");
-            writer.write(sceneXmlString(getScene(), sceneNodes));
+            writer.write(sceneXmlString(getScene(), ""));
 
             // write the room XML string
             for (int i = 0; i < getNumRooms(); i++) {
-                writer.write(roomXmlString(getRoom(i)));
+                writer.write(roomXmlString(getRoom(i), ""));
             }
             writer.write("</Root>\n");
         } catch (IOException e) {

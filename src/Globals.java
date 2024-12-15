@@ -7,6 +7,7 @@ import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 
 public class Globals {
     // audio
@@ -17,7 +18,6 @@ public class Globals {
     public static final String CODE_TABLE_SEQUENCE_FONT_NAME = "gSequenceFontTable";
     public static final String CODE_TABLE_SEQUENCE_NAME = "gSequenceTable";
     public static final String CODE_TABLE_SOUND_FONT_NAME = "gSoundFontTable";
-    public static final String CODE_TABLE_ENTRANCE_NAME = "gEntranceTable";
 
     public static final String[] AUDIO_FILE_NAMES = {
             AUDIOTABLE_NAME,
@@ -82,6 +82,12 @@ public class Globals {
     // entrance table
     public static final int ENTRANCE_ENTRY_SIZE = 4;
     public static final String ENTRANCE_TABLE_HEADER_OUT_NAME = "entrance_table.h";
+    public static final String CODE_TABLE_ENTRANCE_NAME = "gEntranceTable";
+
+    // entrance cutscene table
+    public static final int ENTRANCE_CS_ENTRY_SIZE = 8;
+    public static final String ENTRANCE_CS_TABLE_OUT_NAME = "sEntranceCutsceneTable.txt";
+    public static final String CODE_TABLE_ENTRANCE_CS_NAME = "sEntranceCutsceneTable";
 
     // rom writing
     public static final int ROM_BASE = 0x20;
@@ -102,17 +108,41 @@ public class Globals {
 
     // loads a file into a byte array
     public static byte[] fileToByteArr(File file) {
-        byte[] fileRaw = new byte[(int) file.length()];
+        if (file == null || !file.exists() || !file.isFile()) {
+            throw new IllegalArgumentException("Invalid file provided");
+        }
 
-        // read the file
-        try (DataInputStream stream = new DataInputStream(new FileInputStream(file))) {
-            // read the file into ram
+        long fileSize = file.length();
+        if (fileSize > Integer.MAX_VALUE) {
+            throw new RuntimeException("File is too large to read into a byte array");
+        }
+
+        byte[] fileRaw = new byte[(int) fileSize];
+
+        try (DataInputStream stream = new DataInputStream(Files.newInputStream(file.toPath()))) {
             stream.readFully(fileRaw);
         } catch (IOException e) {
-            // catch exception if the file isn't readable
-            e.printStackTrace();
+            throw new RuntimeException("Error reading file: " + e.getMessage(), e);
         }
 
         return fileRaw;
+    }
+
+    public static int readIntFromByteArray(byte[] arr, int offsetInArr) {
+        if (offsetInArr + 4 > arr.length) {
+            throw new IndexOutOfBoundsException("Not enough bytes to read an int");
+        }
+        return ((arr[offsetInArr] & 0xFF) << 24) |
+                ((arr[offsetInArr + 1] & 0xFF) << 16) |
+                ((arr[offsetInArr + 2] & 0xFF) << 8) |
+                (arr[offsetInArr + 3] & 0xFF);
+    }
+
+    public static int readShortFromByteArray(byte[] arr, int offsetInArr) {
+        if (offsetInArr + 2 > arr.length) {
+            throw new IndexOutOfBoundsException("Not enough bytes to read a short");
+        }
+        return ((arr[offsetInArr] & 0xFF) << 8) |
+                (arr[offsetInArr + 1] & 0xFF);
     }
 }
