@@ -4,6 +4,8 @@
  */
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 
 public class RomWriter {
@@ -98,22 +100,16 @@ public class RomWriter {
         // output rom
         try (FileOutputStream outputStream = new FileOutputStream(outRomFile)) {
             outputStream.write(outRomData);
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
         // output file list
         try (Writer writer = new BufferedWriter(new OutputStreamWriter(
-                new FileOutputStream(outRomFileListFile), "utf-8"))) {
+                Files.newOutputStream(outRomFileListFile.toPath()), StandardCharsets.UTF_8))) {
             for (String romFileName : romFileNameList) {
                 writer.write(romFileName + "\n");
             }
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException(e);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

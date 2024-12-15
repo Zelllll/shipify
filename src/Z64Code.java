@@ -4,6 +4,7 @@
  */
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -134,7 +135,7 @@ public class Z64Code implements Iterable<RomFile> {
 
         // output file list
         try (Writer writer = new BufferedWriter(new OutputStreamWriter(
-                Files.newOutputStream(outFile.toPath()), "utf-8"))) {
+                Files.newOutputStream(outFile.toPath()), StandardCharsets.UTF_8))) {
             for (CodeVariable table : _dataVariables) {
                 writer.write(table.getName() + " : [code + 0x" +
                         Integer.toHexString(table.getOffset()) + "]\n");

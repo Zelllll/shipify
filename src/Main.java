@@ -4,6 +4,7 @@
  */
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Random;
@@ -212,7 +213,7 @@ public class Main {
         File outFile = new File(_outputPath + "/" + Globals.ENTRANCE_TABLE_HEADER_OUT_NAME);
 
         try (Writer writer = new BufferedWriter(new OutputStreamWriter(
-                Files.newOutputStream(outFile.toPath()), "utf-8"))) {
+                Files.newOutputStream(outFile.toPath()), StandardCharsets.UTF_8))) {
             // open entrance table as byte array
             byte[] entranceTableData = Globals.fileToByteArr(_entranceTableFile);
 
