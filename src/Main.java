@@ -13,7 +13,7 @@ import java.util.regex.Pattern;
 
 public class Main {
     private static String _inputPath, _outputPath;
-    private static ArrayList<File> _sceneFiles, _audioFiles, _objectFiles, _textFiles, _xmlFiles;
+    private static ArrayList<File> _sceneFiles, _audioFiles, _objectFiles, _textFiles, _xmlFiles, _miscFiles;
     private static File _entranceTableFile, _entranceCutsceneTableFile;
 
     /**
@@ -54,6 +54,7 @@ public class Main {
             _objectFiles = new ArrayList<>();
             _textFiles = new ArrayList<>();
             _xmlFiles = new ArrayList<>();
+            _miscFiles = new ArrayList<>();
             _entranceTableFile = null;
             _entranceCutsceneTableFile = null;
 
@@ -90,19 +91,29 @@ public class Main {
                 // check if it is an object file
                 _objectFiles.add(f);
             } else {
+                boolean added = false;
                 // check if it is an audio file
                 for (String s : Globals.AUDIO_FILE_NAMES) {
                     if (fileName.equals(s)) {
                         _audioFiles.add(f);
+                        added = true;
+                        break;
                     }
                 }
+                if (added) continue;
 
                 // check if it is a text file
                 for (String s : Globals.TEXT_FILE_NAMES) {
                     if (fileName.equals(s)) {
                         _textFiles.add(f);
+                        added = true;
+                        break;
                     }
                 }
+                if (added) continue;
+
+                // add it as a misc. file if none of the other cases are true
+                _miscFiles.add(f);
             }
         }
     }
@@ -117,6 +128,7 @@ public class Main {
         // build each section of the rom
         buildScenes(rom);
         buildObjects(rom);
+        buildMisc(rom);
         buildText(rom, code);
         buildAudio(rom, code);
         buildCode(rom, code);
@@ -128,6 +140,23 @@ public class Main {
 
         // save rom to disk
         rom.saveRom(_outputPath);
+    }
+
+    /**
+     * Misc file generation
+     */
+    // builds the object section of the ROM
+    private static void buildMisc(RomWriter rom) {
+        System.out.println("Building miscellaneous files...");
+
+        // if there are no miscellaneous files, skip
+        if (_miscFiles.size() == 0) {
+            return;
+        }
+
+        for (File f : _miscFiles) {
+            rom.add(new RomFile(f));
+        }
     }
 
     /**
