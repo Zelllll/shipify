@@ -17,7 +17,7 @@ public class Z64Scene implements Iterable<RomFile> {
     private final ArrayList<RomFile> roomRomFiles = new ArrayList<>();
     private final Set<Integer> sceneHeaderOffsetList = new HashSet<>();
     private final Set<Integer> collisionHeaderOffsetList = new HashSet<>();
-    private final Set<Path> pathways = new HashSet<>();
+    private final ArrayList<PathwayList> pathways = new ArrayList<>();
 
     /**
      * Constructor for Z64Scene.
@@ -131,71 +131,79 @@ public class Z64Scene implements Iterable<RomFile> {
         }
     }
 
+
     /**
-     * Class representing a Pathway element.
-     * This class encapsulates information about a single pathway, including
-     * the number of points in the path and the data offset.
+     * Class representing a list of pathways.
+     * Encapsulates information about the offset of the pathway list in the scene
+     * and the number of pathways in the list.
      */
-    private static class Path {
-        int numPoints;
-        int pointOffset;
+    private static class PathwayList {
+        int offset;
+        int count;
 
         /**
-         * Constructs a Path object with the specified offset and number of points.
+         * Constructs a PathwayList object with the specified offset.
          *
-         * @param pointOffset the offset value for the pathway data
-         * @param numPoints   the number of points in the pathway
+         * @param offset the offset value for the pathway list in memory
          */
-        public Path(int pointOffset, int numPoints) {
-            this.numPoints = numPoints;
-            this.pointOffset = pointOffset;
+        public PathwayList(int offset) {
+            this.offset = offset;
         }
 
         /**
-         * Gets the offset value for the pathway data.
+         * Gets the offset of the pathway list in memory.
          *
          * @return the offset value
          */
-        public int getPointOffset() {
-            return pointOffset;
+        public int getOffset() {
+            return offset;
         }
 
         /**
-         * Gets the number of points in the pathway.
+         * Sets the count of pathways in the list.
          *
-         * @return the number of points
+         * @param count the number of pathways in the list
          */
-        public int getNumPoints() {
-            return numPoints;
+        public void setCount(int count) {
+            this.count = count;
+        }
+
+        /**
+         * Gets the count of pathways in the list.
+         *
+         * @return the number of pathways in the list
+         */
+        public int getCount() {
+            return count;
         }
     }
 
     /**
      * Parses and processes pathway data from the scene data file.
      * Identifies pathway headers in the scene data, extracts pathway offsets,
-     * and constructs a list of Path objects based on the parsed data.
+     * and constructs a list of PathwayList objects based on the parsed data.
      */
     private void getPathways() {
-        final Set<Integer> pathwayArrayOffsets = new HashSet<>();
         byte[] sceneData = sceneRomFile.getData();
 
         for (Integer header : sceneHeaderOffsetList) {
             int pathwayHeaderCmdOffset = getHeaderCmdOffset(header, DecompEnums.Z64SceneCommand.PATH_LIST.ordinal());
-            int pathwayOffset = segAddrToOffset(sceneData, pathwayHeaderCmdOffset + 4);
+            int pathwayListOffset = segAddrToOffset(sceneData, pathwayHeaderCmdOffset + 4);
 
             // Add pathway to list
-            pathwayArrayOffsets.add(pathwayOffset);
+            pathways.add(new PathwayList(pathwayListOffset));
         }
 
-        for (Integer path : pathwayArrayOffsets) {
-            int tempOffset = path;
+        for (PathwayList path : pathways) {
+            int count = 0;
+            int tempOffset = path.getOffset();
 
             while (sceneData[tempOffset] != 0 && sceneData[tempOffset + 1] == 0 && sceneData[tempOffset + 2] == 0 && sceneData[tempOffset + 3] == 0 &&
                     sceneData[tempOffset + 4] == Globals.SCENE_SEGMENT_NUM) {
-                // Parse through each pathway
-                pathways.add(new Path(segAddrToOffset(sceneData, tempOffset + 4), sceneData[tempOffset]));
                 tempOffset += 8;
+                count++;
             }
+            path.setCount(count);
         }
     }
 
@@ -278,12 +286,12 @@ public class Z64Scene implements Iterable<RomFile> {
      * @param path the Path object containing metadata for the pathway node
      * @return a formatted XML-like string representing the pathway node
      */
-    private String pathwayNodeString(Path path) {
+    private String pathwayNodeString(PathwayList path) {
         return "\t\t<Path Name=\"" +
-                getName() + "PathList_" + Integer.toHexString(path.getPointOffset()).toUpperCase() +
+                getName() + "PathList_" + Integer.toHexString(path.getOffset()).toUpperCase() +
                 "\" Offset=\"" +
-                "0x" + Integer.toHexString(path.getPointOffset()).toUpperCase() +
-                "\" NumPaths=\"" + path.getNumPoints() +
+                "0x" + Integer.toHexString(path.getOffset()).toUpperCase() +
+                "\" NumPaths=\"" + path.getCount() +
                 "\"/>\n";
     }
 
@@ -297,8 +305,10 @@ public class Z64Scene implements Iterable<RomFile> {
     private String getAllPathwayNodes() {
         StringBuilder out = new StringBuilder();
 
-        for (Path path : pathways) {
-            out.append(pathwayNodeString(path));
+        for (PathwayList path : pathways) {
+            if (path.getCount() > 0) {
+                out.append(pathwayNodeString(path));
+            }
         }
 
         return out.toString();
