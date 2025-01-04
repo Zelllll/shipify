@@ -12,12 +12,16 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Main {
-    private static String _inputPath, _outputPath;
-    private static ArrayList<File> _sceneFiles, _audioFiles, _objectFiles, _textFiles, _xmlFiles, _miscFiles;
-    private static File _entranceTableFile, _entranceCutsceneTableFile;
+    private static String outputPath;
+    private static ArrayList<File> sceneFiles, audioFiles, objectFiles, textFiles, miscFiles;
+    private static File entranceTableFile, entranceCutsceneTableFile;
 
     /**
-     * Setup
+     * Entry point for the program.
+     *
+     * @param args Command-line arguments. Requires at least two arguments:
+     *             input directory path and output directory path.
+     * @throws IllegalArgumentException If the input directory does not exist.
      */
     public static void main(String[] args) {
         if (args.length < 2) {
@@ -25,20 +29,20 @@ public class Main {
                     "\tinput_dir: input directory containing rom hack files\n" +
                     "\toutput_dir: output directory");
         } else {
-            // set paths from the user
-            _inputPath = args[0];
-            _outputPath = args[1];
+            // Set paths from the user
+            String inputPath = args[0];
+            outputPath = args[1];
 
-            // check if the input path is valid, if not throw an exception
-            File f = new File(_inputPath);
+            // Check if the input path is valid, if not throw an exception
+            File f = new File(inputPath);
             if (!(f.exists() && f.isDirectory())) {
                 throw new IllegalArgumentException("Input directory does not exist!!!");
             }
 
             System.out.println("Input directory exists...");
 
-            // check if the output path is valid, and if not attempt to create it
-            f = new File(_outputPath);
+            // Check if the output path is valid, and if not attempt to create it
+            f = new File(outputPath);
             if (!(f.exists() && f.isDirectory())) {
                 f.mkdir();
                 System.out.println("Output directory created...");
@@ -46,86 +50,87 @@ public class Main {
 
             System.out.println("Output directory exists...");
 
-            // create an array of all the input files
-            File[] files = new File(_inputPath).listFiles();
+            // Create an array of all the input files
+            File[] files = new File(inputPath).listFiles();
 
-            _sceneFiles = new ArrayList<>();
-            _audioFiles = new ArrayList<>();
-            _objectFiles = new ArrayList<>();
-            _textFiles = new ArrayList<>();
-            _xmlFiles = new ArrayList<>();
-            _miscFiles = new ArrayList<>();
-            _entranceTableFile = null;
-            _entranceCutsceneTableFile = null;
+            sceneFiles = new ArrayList<>();
+            audioFiles = new ArrayList<>();
+            objectFiles = new ArrayList<>();
+            textFiles = new ArrayList<>();
+            miscFiles = new ArrayList<>();
+            entranceTableFile = null;
+            entranceCutsceneTableFile = null;
 
-            // split the array of all files into individual file type arrays
+            // Split the array of all files into individual file type arrays
             splitFileTypes(files);
 
-            // generate output
+            // Generate output
             build();
 
             System.out.println("Success!");
         }
     }
 
+    /**
+     * Categorizes files into various types based on their names.
+     *
+     * @param files Array of files to categorize.
+     */
     public static void splitFileTypes(File[] files) {
         for (File f : files) {
             String fileName = f.getName();
 
-            // if the file is a directory, continue
+            // If the file is a directory, continue
             if (!f.isFile()) {
                 continue;
             }
 
             if (fileName.equals(Globals.CODE_TABLE_ENTRANCE_NAME)) {
-                _entranceTableFile = f;
+                entranceTableFile = f;
             } else if (fileName.equals(Globals.CODE_TABLE_ENTRANCE_CS_NAME)) {
-                _entranceCutsceneTableFile = f;
-            } else if (fileName.endsWith(".xml")) {
-                // check if file is a xml
-                _xmlFiles.add(f);
+                entranceCutsceneTableFile = f;
             } else if (fileName.endsWith("_scene") || fileName.contains("_room_")) {
-                // check if it is a scene/room file
-                _sceneFiles.add(f);
+                // Check if it is a scene/room file
+                sceneFiles.add(f);
             } else if (fileName.startsWith("object_")) {
-                // check if it is an object file
-                _objectFiles.add(f);
+                // Check if it is an object file
+                objectFiles.add(f);
             } else {
                 boolean added = false;
-                // check if it is an audio file
+                // Check if it is an audio file
                 for (String s : Globals.AUDIO_FILE_NAMES) {
                     if (fileName.equals(s)) {
-                        _audioFiles.add(f);
+                        audioFiles.add(f);
                         added = true;
                         break;
                     }
                 }
                 if (added) continue;
 
-                // check if it is a text file
+                // Check if it is a text file
                 for (String s : Globals.TEXT_FILE_NAMES) {
                     if (fileName.equals(s)) {
-                        _textFiles.add(f);
+                        textFiles.add(f);
                         added = true;
                         break;
                     }
                 }
                 if (added) continue;
 
-                // add it as a misc. file if none of the other cases are true
-                _miscFiles.add(f);
+                // Add it as a misc. file if none of the other cases are true
+                miscFiles.add(f);
             }
         }
     }
 
     /**
-     * Output ROM building
+     * Builds the output ROM.
      */
     private static void build() {
         RomWriter rom = new RomWriter();
         Z64Code code = new Z64Code();
 
-        // build each section of the rom
+        // Build each section of the rom
         buildScenes(rom);
         buildObjects(rom);
         buildMisc(rom);
@@ -135,43 +140,45 @@ public class Main {
         buildEntranceTable();
         buildEntranceCutsceneTable();
 
-        // print random meme string
+        // Print random meme string
         System.out.println(Globals.MEME_STRINGS[(new Random()).nextInt(Globals.MEME_STRINGS.length)]);
 
-        // save rom to disk
-        rom.saveRom(_outputPath);
+        // Save rom to disk
+        rom.saveRom(outputPath);
     }
 
     /**
-     * Misc file generation
+     * Builds the miscellaneous files section of the ROM.
+     *
+     * @param rom The ROM writer object to which the files will be added.
      */
-    // builds the object section of the ROM
     private static void buildMisc(RomWriter rom) {
         System.out.println("Building miscellaneous files...");
 
-        // if there are no miscellaneous files, skip
-        if (_miscFiles.isEmpty()) {
+        // If there are no miscellaneous files, skip
+        if (miscFiles.isEmpty()) {
             return;
         }
 
-        for (File f : _miscFiles) {
+        for (File f : miscFiles) {
             rom.add(new RomFile(f));
         }
     }
 
     /**
-     * Object generation
+     * Builds the object section of the ROM.
+     *
+     * @param rom The ROM writer object to which the objects will be added.
      */
-    // builds the object section of the ROM
     private static void buildObjects(RomWriter rom) {
         System.out.println("Building objects...");
 
-        // if there are no object files, do not attempt to instantiate a Z64Object object
-        if (_objectFiles.isEmpty()) {
+        // If there are no object files, do not attempt to instantiate a Z64Object object
+        if (objectFiles.isEmpty()) {
             return;
         }
 
-        for (File f : _objectFiles) {
+        for (File f : objectFiles) {
             Z64Object newObject = new Z64Object(f);
 
             for (RomFile rf : newObject) {
@@ -181,19 +188,21 @@ public class Main {
     }
 
     /**
-     * Audio generation
+     * Builds the audio section of the ROM.
+     *
+     * @param rom  The ROM writer object to which the audio files will be added.
+     * @param code The Z64Code object containing additional ROM-related information.
      */
-    // builds the audio section of the ROM
     private static void buildAudio(RomWriter rom, Z64Code code) {
         System.out.println("Building audio...");
 
-        // if there are no audio files, do not attempt to instantiate a Z64Audio object
-        if (_audioFiles.size() == 0) {
+        // If there are no audio files, do not attempt to instantiate a Z64Audio object
+        if (audioFiles.isEmpty()) {
             return;
         }
 
-        // instantiate a Z64Audio object and build
-        Z64Audio audio = new Z64Audio(_audioFiles, code);
+        // Instantiate a Z64Audio object and build
+        Z64Audio audio = new Z64Audio(audioFiles, code);
 
         for (RomFile rf : audio) {
             rom.add(rf);
@@ -201,18 +210,21 @@ public class Main {
     }
 
     /**
-     * Text generation
+     * Builds the text section of the ROM.
+     *
+     * @param rom  The ROM writer object to which the text files will be added.
+     * @param code The Z64Code object containing additional ROM-related information.
      */
     private static void buildText(RomWriter rom, Z64Code code) {
         System.out.println("Building text...");
 
-        // if there are no text files, do not attempt to instantiate a Z64Audio object
-        if (_textFiles.isEmpty()) {
+        // If there are no text files, do not attempt to instantiate a Z64Audio object
+        if (textFiles.isEmpty()) {
             return;
         }
 
-        // instantiate a Z64Text object and build
-        Z64Text text = new Z64Text(_textFiles, code);
+        // Instantiate a Z64Text object and build
+        Z64Text text = new Z64Text(textFiles, code);
 
         for (RomFile rf : text) {
             rom.add(rf);
@@ -220,38 +232,38 @@ public class Main {
     }
 
     /**
-     * Code generation
+     * Builds the code section of the ROM.
+     *
+     * @param rom  The ROM writer object to which the code files will be added.
+     * @param code The Z64Code object containing additional ROM-related information.
      */
-    // builds the code section of the ROM
-    // note that this should be the last step in the build process
     private static void buildCode(RomWriter rom, Z64Code code) {
         for (RomFile romFile : code) {
             rom.add(romFile);
         }
 
-        code.writeDataOffsets(_outputPath);
+        code.writeDataOffsets(outputPath);
     }
 
     /**
-     * Entrance table header generation
+     * Builds the entire entrance table to a header file.
      */
-    // builds the entire entrance table to a header file
     private static void buildEntranceTable() {
         System.out.println("Building entrance table...");
 
-        if (_entranceTableFile == null) {
+        if (entranceTableFile == null) {
             return;
         }
 
-        // create entrance table header file
-        File outFile = new File(_outputPath + "/" + Globals.ENTRANCE_TABLE_HEADER_OUT_NAME);
+        // Create entrance table header file
+        File outFile = new File(outputPath + "/" + Globals.ENTRANCE_TABLE_HEADER_OUT_NAME);
 
         try (Writer writer = new BufferedWriter(new OutputStreamWriter(
                 Files.newOutputStream(outFile.toPath()), StandardCharsets.UTF_8))) {
-            // open entrance table as byte array
-            byte[] entranceTableData = Globals.fileToByteArr(_entranceTableFile);
+            // Open entrance table as byte array
+            byte[] entranceTableData = Globals.fileToByteArr(entranceTableFile);
 
-            // write each line of the entrance table header
+            // Write each line of the entrance table header
             for (int i = 0; i < entranceTableData.length; i += Globals.ENTRANCE_ENTRY_SIZE) {
                 writer.write(formatEntranceEntry(entranceTableData, i) + "\n");
             }
@@ -260,14 +272,20 @@ public class Main {
         }
     }
 
-    // generate an individual entrance table line
+    /**
+     * Generates an individual entrance table line.
+     *
+     * @param entranceTableData Byte array of entrance table data.
+     * @param offset            Offset within the data array to read from.
+     * @return Formatted string representing the entrance table line.
+     */
     private static String formatEntranceEntry(byte[] entranceTableData, int offset) {
         int entranceIndex = offset / Globals.ENTRANCE_ENTRY_SIZE;
         int sceneIndex = ((int) entranceTableData[offset + 0] & 0xFF);
         int spawnIndex = ((int) entranceTableData[offset + 1] & 0xFF);
         int flagsPacked = Globals.readShortFromByteArray(entranceTableData, offset + 2);
 
-        // unpack flags
+        // Unpack flags
         boolean bgmFlag = ((flagsPacked >> 15) & 1) == 1;
         boolean titleFlag = ((flagsPacked >> 14) & 1) == 1;
         int transitionEndIndex = ((flagsPacked >> 7) & 0x7F);
@@ -286,20 +304,20 @@ public class Main {
 
         String out = "DEFINE_ENTRANCE(";
 
-        // entrance enum name
+        // Entrance enum name
         out += DecompEnums.DECOMP_ENTRANCE_INDEX_NAMES[entranceIndex] + ", ";
 
-        // scene enum name
+        // Scene enum name
         if (sceneIndex >= DecompEnums.DECOMP_SCENE_NAMES.length) {
             out += DecompEnums.DECOMP_SCENE_NAMES[0] + ", ";
         } else {
             out += DecompEnums.DECOMP_SCENE_NAMES[sceneIndex] + ", ";
         }
 
-        // spawn number
+        // Spawn number
         out += spawnIndex + ", ";
 
-        // flags
+        // Flags
         out += bgmFlag + ", ";
         out += titleFlag + ", ";
         out += transitionEnd + ", ";
@@ -310,27 +328,26 @@ public class Main {
 
 
     /**
-     * Entrance cutscene table generation
+     * Builds the entrance cutscene table header.
      */
-    // build the entire entrance cutscene table to a txt file
     private static void buildEntranceCutsceneTable() {
         System.out.println("Building entrance cutscene table...");
 
-        if (_entranceCutsceneTableFile == null) {
+        if (entranceCutsceneTableFile == null) {
             return;
         }
 
-        // create entrance cutscene table output file
-        File outFile = new File(_outputPath + "/" + Globals.ENTRANCE_CS_TABLE_OUT_NAME);
+        // Create entrance cutscene table output file
+        File outFile = new File(outputPath + "/" + Globals.ENTRANCE_CS_TABLE_OUT_NAME);
 
         try (Writer writer = new BufferedWriter(new OutputStreamWriter(
                 Files.newOutputStream(outFile.toPath()), StandardCharsets.UTF_8))) {
-            // open entrance cutscene table as byte array
-            byte[] entranceCsTableData = Globals.fileToByteArr(_entranceCutsceneTableFile);
+            // Open entrance cutscene table as byte array
+            byte[] entranceCsTableData = Globals.fileToByteArr(entranceCutsceneTableFile);
 
             writer.write("EntranceCutscene " + Globals.CODE_TABLE_ENTRANCE_CS_NAME + "[] = {\n");
 
-            // write each line of the entrance cutscene table file
+            // Write each line of the entrance cutscene table file
             for (int i = 0; i < entranceCsTableData.length; i += Globals.ENTRANCE_CS_ENTRY_SIZE) {
                 writer.write(formatEntranceCutsceneEntry(entranceCsTableData, i) + "\n");
             }
@@ -341,9 +358,15 @@ public class Main {
         }
     }
 
-    // generates an individual line of the entrance cutscene table
+    /**
+     * Formats an entrance cutscene table entry as a string.
+     *
+     * @param entranceCsTableData Byte array of entrance cutscene table data.
+     * @param offset              Index to start reading from.
+     * @return Formatted string representing the entrance cutscene table entry.
+     */
     private static String formatEntranceCutsceneEntry(byte[] entranceCsTableData, int offset) {
-        // get arguments from table entry
+        // Get arguments from table entry
         String entrance = DecompEnums.DECOMP_ENTRANCE_INDEX_NAMES[Globals.readShortFromByteArray(entranceCsTableData, offset)];
         int ageRestriction = ((int) entranceCsTableData[offset + 2] & 0xFF);
         int flag = ((int) entranceCsTableData[offset + 3] & 0xFF);
@@ -360,40 +383,45 @@ public class Main {
     }
 
     /**
-     * Scene generation
+     * Builds the scene section of the ROM.
+     *
+     * @param rom The ROM writer object to which the scene files will be added.
      */
-    // builds the scene section of the ROM
     private static void buildScenes(RomWriter rom) {
         System.out.println("Building scenes...");
 
         ArrayList<Z64Scene> sceneList = genSceneList();
 
-        // add all the scenes and rooms to the rom
+        // Add all the scenes and rooms to the rom
         for (Z64Scene scene : sceneList) {
-            // add file to the rom
+            // Add file to the rom
             for (RomFile romFile : scene) {
                 rom.add(romFile);
             }
 
-            // generate xml
-            scene.saveXml(_outputPath);
+            // Generate xml
+            scene.saveXml(outputPath);
         }
     }
 
-    // generate the scene list
+    /**
+     * Generates the scene list by iterating over scene files and constructing Z64Scene objects.
+     *
+     * @return A list of all generated scenes.
+     */
     private static ArrayList<Z64Scene> genSceneList() {
         ArrayList<Z64Scene> out = new ArrayList<>();
 
-        for (File f : _sceneFiles) {
-            // check if the file is a scene
+        for (File f : sceneFiles) {
+            // Check if the file is a scene
             if (f.getName().endsWith("_scene")) {
-                // create a new scene object
+                // Create a new scene object
                 Z64Scene scene = new Z64Scene(new RomFile(f));
 
-                // add all rooms
+                // Add all rooms
                 addRoomsToScene(scene);
 
-                // add scene object to the output list
+                // Add scene object to the output list
                 out.add(scene);
             }
         }
@@ -401,12 +429,16 @@ public class Main {
         return out;
     }
 
-    // gets the index contained in a room file name
-    // so (getIndexFromRoomName("jabu_jabu_room_2") == 2), (getIndexFromRoomName("jabu_jabu_room_25") == 25), etc.
+    /**
+     * Extracts the index from a room file name.
+     * For example, getIndexFromRoomName("jabu_jabu_room_2") returns 2,
+     * getIndexFromRoomName("jabu_jabu_room_25") returns 25.
+     *
+     * @param roomName The name of the room file.
+     * @return The extracted room index.
+     * @throws RuntimeException If no index is found in the room name.
+     */
     private static int getIndexFromRoomName(String roomName) {
-        // sourced from StackOverflow
-        // https://stackoverflow.com/questions/3083154/how-can-i-get-the-last-integer-56-from-string-like-ra12ke43sh56
-
         Pattern p = Pattern.compile("[0-9]+$");
         Matcher m = p.matcher(roomName);
         if (m.find()) {
@@ -416,14 +448,18 @@ public class Main {
         }
     }
 
-    // adds all of a scene's rooms
+    /**
+     * Adds all rooms associated with a scene to the given scene object.
+     *
+     * @param scene The scene to which rooms will be added.
+     */
     private static void addRoomsToScene(Z64Scene scene) {
         String sceneName = scene.getName();
         ArrayList<File> roomInputFiles = new ArrayList<>();
         int lastRoomAdded = -1;
 
-        // add all the room file names to the list
-        for (File f : _sceneFiles) {
+        // Add all the room file names to the list
+        for (File f : sceneFiles) {
             String fileName = f.getName();
 
             if (fileName.startsWith(sceneName + "_room_")) {

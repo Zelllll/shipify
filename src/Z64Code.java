@@ -1,6 +1,7 @@
 /**
  * Z64Code.java
- * Class representing a Zelda 64 code file
+ * Class representing a Zelda 64 code file.
+ * Manages the addition of code tables, their offsets, and generation of a ROM file.
  */
 
 import java.io.*;
@@ -11,55 +12,80 @@ import java.util.Iterator;
 
 public class Z64Code implements Iterable<RomFile> {
     private static class CodeVariable {
-        private final byte[] _tableData;
-        private final String _tableName;
-        private int _offset;
+        private final byte[] tableData;
+        private final String tableName;
+        private int offset = 0;
 
-        // constructor
+        /**
+         * Constructor for CodeVariable.
+         * Represents a single table or data block within the code.
+         *
+         * @param data Byte array representing the table data.
+         * @param name Name of the table or data block.
+         */
         public CodeVariable(byte[] data, String name) {
-            _tableData = data;
-            _tableName = name;
-            _offset = 0;
+            tableData = data;
+            tableName = name;
         }
 
-        // returns the name of the byte array
+        /**
+         * Gets the name of the table.
+         *
+         * @return The name of the table as a string.
+         */
         public String getName() {
-            return _tableName;
+            return tableName;
         }
 
-        // returns the data of the byte array
+        /**
+         * Gets the data of the table.
+         *
+         * @return The data of the table as a byte array.
+         */
         public byte[] getData() {
-            return _tableData;
+            return tableData;
         }
 
-        // sets the offset of the array
+        /**
+         * Sets the offset of the table within the ROM file.
+         *
+         * @param offset The offset to set.
+         */
         public void setOffset(int offset) {
-            _offset = offset;
+            this.offset = offset;
         }
 
-        // gets the offset of the array
+        /**
+         * Gets the offset of the table within the ROM file.
+         *
+         * @return The offset as an integer.
+         */
         public int getOffset() {
-            return _offset;
+            return offset;
         }
     }
 
-    private final ArrayList<CodeVariable> _dataVariables;
-    private RomFile _romFile;
+    private final ArrayList<CodeVariable> dataVariables = new ArrayList<>();
+    private RomFile romFile = null;
 
-    // constructor
-    public Z64Code() {
-        _dataVariables = new ArrayList<>();
-        _romFile = null;
-    }
-
-    // adds a new array to code
+    /**
+     * Adds a new data table to the code.
+     *
+     * @param data Byte array representing the table data.
+     * @param name Name of the table.
+     */
     public void addArray(byte[] data, String name) {
-        _dataVariables.add(new CodeVariable(data, name));
+        dataVariables.add(new CodeVariable(data, name));
     }
 
-    // checks if code currently contains a variable with the specified name
+    /**
+     * Checks if the code contains a table with the specified name.
+     *
+     * @param variableName The name of the table to search for.
+     * @return True if the table exists, otherwise false.
+     */
     public boolean contains(String variableName) {
-        for (CodeVariable var : _dataVariables) {
+        for (CodeVariable var : dataVariables) {
             if (var.getName().equals(variableName)) {
                 return true;
             }
@@ -67,110 +93,117 @@ public class Z64Code implements Iterable<RomFile> {
         return false;
     }
 
-    // gets the expected size of code
+    /**
+     * Calculates the expected size of the ROM file based on the data tables.
+     *
+     * @return The total size of the ROM file in bytes.
+     */
     private int getExpectedFileSize() {
         int size = 0;
 
-        for (CodeVariable var : _dataVariables) {
+        for (CodeVariable var : dataVariables) {
             size += var.getData().length;
         }
 
         return size;
     }
 
-    // generates the RomFile for code, and returns a reference to it,
-    // and sets the offsets of each data variable
+    /**
+     * Generates the ROM file for the code and sets the offsets for each data table.
+     *
+     * @return The generated ROM file as a `RomFile` object.
+     */
     private RomFile genRomFile() {
         int fileSize = getExpectedFileSize();
 
-        // do not build the file if no tables are being added
+        // Handle case where no tables are added
         if (fileSize == 0) {
             byte[] emptyArr = new byte[16];
             return new RomFile(emptyArr, Globals.CODE_NAME);
         }
 
-        // generate raw data for the file
-        byte[] rawData = new byte[getExpectedFileSize()];
+        // Create raw data for the file
+        byte[] rawData = new byte[fileSize];
         int offset = 0;
 
-        // add all the tables to the data
-        for (CodeVariable var : _dataVariables) {
+        // Add all tables and set their offsets
+        for (CodeVariable var : dataVariables) {
             byte[] tableData = var.getData();
             int tableLength = tableData.length;
 
-            // sanity check
-            if (offset > fileSize) {
-                throw new RuntimeException("Something went wrong when generating code");
-            }
-
-            // set the offset of the variable
             var.setOffset(offset);
-
-            // copy table into the code file data
             System.arraycopy(tableData, 0, rawData, offset, tableLength);
-
-            // set offset for next iteration
             offset += tableLength;
         }
 
-        // generate the RomFile
-        _romFile = new RomFile(rawData, Globals.CODE_NAME);
-        return _romFile;
+        // Generate the ROM file
+        romFile = new RomFile(rawData, Globals.CODE_NAME);
+        return romFile;
     }
 
-    // writes the offsets relative to `code` of the data variables contained within it
+    /**
+     * Writes the offsets of the data tables to an output file.
+     *
+     * @param outputPath The path to the directory where the offset file will be saved.
+     * @throws RuntimeException if an I/O error occurs during file writing.
+     */
     public void writeDataOffsets(String outputPath) {
-        // code file is empty
         if (genRomFile() == null) {
-            return;
+            return; // No data to write offsets for
         }
 
-        // create a file to write the offsets of the code variables in
         File outFile = new File(outputPath + "/" + Globals.CODE_VARIABLE_OFFSET_LIST_OUT_NAME);
 
-        // output file list
         try (Writer writer = new BufferedWriter(new OutputStreamWriter(
                 Files.newOutputStream(outFile.toPath()), StandardCharsets.UTF_8))) {
-            for (CodeVariable table : _dataVariables) {
+            for (CodeVariable table : dataVariables) {
                 writer.write(table.getName() + " : [code + 0x" +
                         Integer.toHexString(table.getOffset()) + "]\n");
             }
-            if (_romFile != null) {
+            if (romFile != null) {
                 writer.write("\nend" + " : [code + 0x" +
                         Integer.toHexString(getExpectedFileSize()) + "]\n");
             }
-
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
     /**
-     * RomFile iteration
+     * Iterator for ROM files.
+     * Provides iteration over the single ROM file generated by this class.
      */
-
-    // iterator that gives all the code `RomFile`s (only a single one)
     private class CodeIterator implements Iterator<RomFile> {
-        private boolean _done;
+        private boolean _done = false;
 
-        // constructor
-        public CodeIterator() {
-            _done = false;
-        }
-
-        // tells the iterator when it is finished
+        /**
+         * Checks if there are more elements to iterate.
+         *
+         * @return True if the iterator has more elements, otherwise false.
+         */
+        @Override
         public boolean hasNext() {
             return !_done;
         }
 
-        // returns the next file
+        /**
+         * Retrieves the next element in the iteration.
+         *
+         * @return The next `RomFile` object.
+         */
+        @Override
         public RomFile next() {
             _done = true;
             return genRomFile();
         }
     }
 
-    // public iterator
+    /**
+     * Provides a public iterator for the ROM files.
+     *
+     * @return An iterator for the ROM files in this class.
+     */
+    @Override
     public Iterator<RomFile> iterator() {
         return new CodeIterator();
     }

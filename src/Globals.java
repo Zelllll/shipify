@@ -75,8 +75,9 @@ public class Globals {
     // code
     public static final String CODE_NAME = "code_patch";
 
-    // objects
-    public static final int GFX_CMD_SIZE = 8;
+    // scenes
+    public static final int SCENE_SEGMENT_NUM = 2;
+    public static final int ROOM_SEGMENT_NUM = 3;
 
     // entrance table
     public static final int ENTRANCE_ENTRY_SIZE = 4;
