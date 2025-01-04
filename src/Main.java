@@ -29,9 +29,14 @@ public class Main {
      */
     public static void main(String[] args) {
         if (args.length < 2) {
-            System.out.println("Usage: java ProgramName input_dir output_dir\n" +
-                    "\tinput_dir: Input directory containing ROM hack files\n" +
-                    "\toutput_dir: Output directory for generated files");
+            System.out.println(OutputHelpers.RED + OutputHelpers.BOLD + "Error: Insufficient arguments provided!" +
+                    OutputHelpers.RESET);
+            System.out.println(OutputHelpers.YELLOW + "Usage: " + OutputHelpers.RESET + OutputHelpers.CYAN +
+                    "java ProgramName input_dir output_dir" + OutputHelpers.RESET);
+            System.out.println(OutputHelpers.YELLOW + "\tinput_dir: " + OutputHelpers.RESET +
+                    "Input directory containing ROM hack files");
+            System.out.println(OutputHelpers.YELLOW + "\toutput_dir: " + OutputHelpers.RESET +
+                    "Output directory for generated files");
             return; // Exit if insufficient arguments
         }
 
@@ -72,7 +77,8 @@ public class Main {
         // Generate output
         build();
 
-        System.out.println(OutputHelpers.GREEN + OutputHelpers.BOLD + "Success!" + OutputHelpers.RESET + " Output generated in: " + outputPath);
+        System.out.println(OutputHelpers.GREEN + OutputHelpers.BOLD + "Success!" + OutputHelpers.RESET +
+                " Output generated in: " + outputPath);
     }
 
 
@@ -146,7 +152,8 @@ public class Main {
         buildEntranceCutsceneTable();
 
         // Print random meme string
-        System.out.println(OutputHelpers.RED + Globals.MEME_STRINGS[(new Random()).nextInt(Globals.MEME_STRINGS.length)] + OutputHelpers.RESET);
+        System.out.println(OutputHelpers.RED + Globals.MEME_STRINGS[(new Random()).nextInt(Globals.MEME_STRINGS.length)] +
+                OutputHelpers.RESET);
 
         // Save rom to disk
         rom.saveRom(outputPath);
