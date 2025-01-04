@@ -21,7 +21,7 @@ import java.util.Iterator;
  */
 
 public class Z64Text implements Iterable<RomFile> {
-    private final ArrayList<RomFile> _textRomFiles;
+    private final ArrayList<RomFile> _textRomFiles = new ArrayList<>();
 
     /**
      * Constructor for the Z64Text class.
@@ -30,8 +30,6 @@ public class Z64Text implements Iterable<RomFile> {
      * @param code      Z64Code object for managing code arrays.
      */
     public Z64Text(ArrayList<File> textFiles, Z64Code code) {
-        _textRomFiles = new ArrayList<>();
-
         // Text tables
         for (String tableName : Globals.TEXT_TABLE_NAMES) {
             for (File f : textFiles) {

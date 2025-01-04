@@ -9,7 +9,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 public class Z64Audio implements Iterable<RomFile> {
-    private static ArrayList<RomFile> audioRomFiles;
+    private static final ArrayList<RomFile> audioRomFiles = new ArrayList<>();
+    ;
 
     /**
      * Constructor for Z64Audio.
@@ -21,8 +22,6 @@ public class Z64Audio implements Iterable<RomFile> {
      * @throws RuntimeException if any required audio files are missing.
      */
     public Z64Audio(ArrayList<File> audioFiles, Z64Code code) {
-        audioRomFiles = new ArrayList<>();
-
         // Load all audio-related files
         for (File f : audioFiles) {
             String fileName = f.getName();

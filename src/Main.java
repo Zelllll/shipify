@@ -13,63 +13,68 @@ import java.util.regex.Pattern;
 
 public class Main {
     private static String outputPath;
-    private static ArrayList<File> sceneFiles, audioFiles, objectFiles, textFiles, miscFiles;
-    private static File entranceTableFile, entranceCutsceneTableFile;
+    private static final ArrayList<File> sceneFiles = new ArrayList<>();
+    private static final ArrayList<File> audioFiles = new ArrayList<>();
+    private static final ArrayList<File> objectFiles = new ArrayList<>();
+    private static final ArrayList<File> textFiles = new ArrayList<>();
+    private static final ArrayList<File> miscFiles = new ArrayList<>();
+    private static File entranceTableFile = null;
+    private static File entranceCutsceneTableFile = null;
 
     /**
      * Entry point for the program.
      *
      * @param args Command-line arguments. Requires at least two arguments:
      *             input directory path and output directory path.
-     * @throws IllegalArgumentException If the input directory does not exist.
      */
     public static void main(String[] args) {
         if (args.length < 2) {
-            System.out.println("usage: input_dir output_dir\n" +
-                    "\tinput_dir: input directory containing rom hack files\n" +
-                    "\toutput_dir: output directory");
-        } else {
-            // Set paths from the user
-            String inputPath = args[0];
-            outputPath = args[1];
-
-            // Check if the input path is valid, if not throw an exception
-            File f = new File(inputPath);
-            if (!(f.exists() && f.isDirectory())) {
-                throw new IllegalArgumentException("Input directory does not exist!!!");
-            }
-
-            System.out.println("Input directory exists...");
-
-            // Check if the output path is valid, and if not attempt to create it
-            f = new File(outputPath);
-            if (!(f.exists() && f.isDirectory())) {
-                f.mkdir();
-                System.out.println("Output directory created...");
-            }
-
-            System.out.println("Output directory exists...");
-
-            // Create an array of all the input files
-            File[] files = new File(inputPath).listFiles();
-
-            sceneFiles = new ArrayList<>();
-            audioFiles = new ArrayList<>();
-            objectFiles = new ArrayList<>();
-            textFiles = new ArrayList<>();
-            miscFiles = new ArrayList<>();
-            entranceTableFile = null;
-            entranceCutsceneTableFile = null;
-
-            // Split the array of all files into individual file type arrays
-            splitFileTypes(files);
-
-            // Generate output
-            build();
-
-            System.out.println("Success!");
+            System.out.println("Usage: java ProgramName input_dir output_dir\n" +
+                    "\tinput_dir: Input directory containing ROM hack files\n" +
+                    "\toutput_dir: Output directory for generated files");
+            return; // Exit if insufficient arguments
         }
+
+        // Set paths from the user
+        String inputPath = args[0];
+        outputPath = args[1];
+
+        // Validate input directory
+        File inputDir = new File(inputPath);
+        if (!inputDir.exists() || !inputDir.isDirectory()) {
+            throw new IllegalArgumentException("Input directory does not exist or is not a directory: " + inputPath);
+        }
+        System.out.println("Input directory verified: " + inputPath);
+
+        // Validate or create output directory
+        File outputDir = new File(outputPath);
+        if (!outputDir.exists()) {
+            if (outputDir.mkdirs()) {
+                System.out.println("Output directory created: " + outputPath);
+            } else {
+                throw new RuntimeException("Failed to create output directory: " + outputPath);
+            }
+        } else if (!outputDir.isDirectory()) {
+            throw new IllegalArgumentException("Output path exists but is not a directory: " + outputPath);
+        }
+        System.out.println("Output directory verified: " + outputPath);
+
+        // Retrieve files from the input directory
+        File[] files = inputDir.listFiles();
+        if (files == null || files.length == 0) {
+            throw new IllegalArgumentException("Input directory is empty or inaccessible: " + inputPath);
+        }
+        System.out.println("Found " + files.length + " files in input directory.");
+
+        // Split the array of files into individual file type arrays
+        splitFileTypes(files);
+
+        // Generate output
+        build();
+
+        System.out.println("Success! Output generated in: " + outputPath);
     }
+
 
     /**
      * Categorizes files into various types based on their names.

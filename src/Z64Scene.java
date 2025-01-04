@@ -14,10 +14,13 @@ import java.util.Set;
 
 public class Z64Scene implements Iterable<RomFile> {
     private final RomFile _sceneRomFile;
-    private final ArrayList<RomFile> _roomRomFiles;
-    private final Set<Integer> _sceneHeaderOffsetList;
-    private final Set<Integer> _collisionHeaderOffsetList;
-    private final Set<Integer> _pathwayOffsetList;
+    private final ArrayList<RomFile> _roomRomFiles = new ArrayList<>();
+    ;
+    private final Set<Integer> _sceneHeaderOffsetList = new HashSet<>();
+    ;
+    private final Set<Integer> _collisionHeaderOffsetList = new HashSet<>();
+    ;
+    private final Set<Integer> _pathwayOffsetList = new HashSet<>();
 
     /**
      * Constructor for Z64Scene.
@@ -28,11 +31,6 @@ public class Z64Scene implements Iterable<RomFile> {
      */
     public Z64Scene(RomFile scene) {
         _sceneRomFile = scene;
-        _roomRomFiles = new ArrayList<>();
-        _sceneHeaderOffsetList = new HashSet<>();
-        _collisionHeaderOffsetList = new HashSet<>();
-        _pathwayOffsetList = new HashSet<>();
-
         getAlternateSceneHeaderOffsets();
         getCollisionHeaderOffsets();
         getPathwayOffsets();
