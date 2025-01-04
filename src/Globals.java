@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 
 public class Globals {
-    // audio
+    // Audio
     public static final String AUDIOTABLE_NAME = "Audiotable";
     public static final String AUDIOSEQ_NAME = "Audioseq";
     public static final String AUDIOBANK_NAME = "Audiobank";
@@ -17,7 +17,6 @@ public class Globals {
     public static final String CODE_TABLE_SEQUENCE_FONT_NAME = "gSequenceFontTable";
     public static final String CODE_TABLE_SEQUENCE_NAME = "gSequenceTable";
     public static final String CODE_TABLE_SOUND_FONT_NAME = "gSoundFontTable";
-
     public static final String[] AUDIO_FILE_NAMES = {
             AUDIOTABLE_NAME,
             AUDIOSEQ_NAME,
@@ -39,7 +38,7 @@ public class Globals {
             AUDIOBANK_NAME,
     };
 
-    // text
+    // Text
     public static final String TEXT_NES_DATA_NAME = "nes_message_data_static";
     public static final String TEXT_GER_DATA_NAME = "ger_message_data_static";
     public static final String TEXT_FRA_DATA_NAME = "fra_message_data_static";
@@ -48,7 +47,6 @@ public class Globals {
     public static final String CODE_TABLE_TEXT_GER_NAME = "sGerMessageEntryTable";
     public static final String CODE_TABLE_TEXT_FRA_NAME = "sFraMessageEntryTable";
     public static final String CODE_TABLE_TEXT_STAFF_NAME = "sStaffMessageEntryTable";
-
     public static final String[] TEXT_FILE_NAMES = {
             TEXT_NES_DATA_NAME,
             TEXT_GER_DATA_NAME,
@@ -72,29 +70,30 @@ public class Globals {
             TEXT_STAFF_DATA_NAME,
     };
 
-    // code
+    // Code
     public static final String CODE_NAME = "code_patch";
 
-    // scenes
+    // Scenes
     public static final int SCENE_SEGMENT_NUM = 2;
     public static final int ROOM_SEGMENT_NUM = 3;
 
-    // entrance table
+    // Entrance table
     public static final int ENTRANCE_ENTRY_SIZE = 4;
     public static final String ENTRANCE_TABLE_HEADER_OUT_NAME = "entrance_table.h";
     public static final String CODE_TABLE_ENTRANCE_NAME = "gEntranceTable";
 
-    // entrance cutscene table
+    // Entrance cutscene table
     public static final int ENTRANCE_CS_ENTRY_SIZE = 8;
     public static final String ENTRANCE_CS_TABLE_OUT_NAME = "sEntranceCutsceneTable.txt";
     public static final String CODE_TABLE_ENTRANCE_CS_NAME = "sEntranceCutsceneTable";
 
-    // rom writing
+    // Rom writing
     public static final int ROM_BASE = 0x20;
     public static final String ROM_OUT_NAME = "patch_rom";
     public static final String ROM_FILE_LIST_OUT_NAME = "patch_files.txt";
     public static final String CODE_VARIABLE_OFFSET_LIST_OUT_NAME = "code_table_offsets.txt";
 
+    // Meme strings
     public static final String[] MEME_STRINGS = {
             "Planting leeks...",
             "Ignoring pull requests...",
@@ -110,7 +109,14 @@ public class Globals {
             "Decompiling z_sram.c...",
     };
 
-    // loads a file into a byte array
+    /**
+     * Reads the contents of a file into a byte array.
+     *
+     * @param file The file to be loaded.
+     * @return A byte array containing the file's data.
+     * @throws IllegalArgumentException If the provided file is null, does not exist, or is not a file.
+     * @throws RuntimeException         If the file size exceeds the maximum array size or if an error occurs while reading the file.
+     */
     public static byte[] fileToByteArr(File file) {
         if (file == null || !file.exists() || !file.isFile()) {
             throw new IllegalArgumentException("Invalid file provided");
@@ -132,6 +138,14 @@ public class Globals {
         return fileRaw;
     }
 
+    /**
+     * Reads a 4-byte integer from a byte array at a specified offset.
+     *
+     * @param arr        The byte array containing the data.
+     * @param offsetInArr The offset within the array to start reading from.
+     * @return The integer value read from the array.
+     * @throws IndexOutOfBoundsException If the offset plus 4 bytes exceeds the array length.
+     */
     public static int readIntFromByteArray(byte[] arr, int offsetInArr) {
         if (offsetInArr + 4 > arr.length) {
             throw new IndexOutOfBoundsException("Not enough bytes to read an int");
@@ -142,6 +156,14 @@ public class Globals {
                 (arr[offsetInArr + 3] & 0xFF);
     }
 
+    /**
+     * Reads a 2-byte short from a byte array at a specified offset.
+     *
+     * @param arr        The byte array containing the data.
+     * @param offsetInArr The offset within the array to start reading from.
+     * @return The short value read from the array.
+     * @throws IndexOutOfBoundsException If the offset plus 2 bytes exceeds the array length.
+     */
     public static int readShortFromByteArray(byte[] arr, int offsetInArr) {
         if (offsetInArr + 2 > arr.length) {
             throw new IndexOutOfBoundsException("Not enough bytes to read a short");
