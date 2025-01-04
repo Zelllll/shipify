@@ -150,7 +150,7 @@ public class Main {
         System.out.println("Building miscellaneous files...");
 
         // if there are no miscellaneous files, skip
-        if (_miscFiles.size() == 0) {
+        if (_miscFiles.isEmpty()) {
             return;
         }
 
@@ -167,7 +167,7 @@ public class Main {
         System.out.println("Building objects...");
 
         // if there are no object files, do not attempt to instantiate a Z64Object object
-        if (_objectFiles.size() == 0) {
+        if (_objectFiles.isEmpty()) {
             return;
         }
 
@@ -207,7 +207,7 @@ public class Main {
         System.out.println("Building text...");
 
         // if there are no text files, do not attempt to instantiate a Z64Audio object
-        if (_textFiles.size() == 0) {
+        if (_textFiles.isEmpty()) {
             return;
         }
 

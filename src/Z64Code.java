@@ -10,9 +10,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 public class Z64Code implements Iterable<RomFile> {
-    private class CodeVariable {
-        private byte[] _tableData;
-        private String _tableName;
+    private static class CodeVariable {
+        private final byte[] _tableData;
+        private final String _tableName;
         private int _offset;
 
         // constructor
@@ -43,7 +43,7 @@ public class Z64Code implements Iterable<RomFile> {
         }
     }
 
-    private ArrayList<CodeVariable> _dataVariables;
+    private final ArrayList<CodeVariable> _dataVariables;
     private RomFile _romFile;
 
     // constructor

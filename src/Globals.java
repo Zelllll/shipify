@@ -104,6 +104,10 @@ public class Globals {
             "Arguing about uintptr_t...",
             "Withdrawing $1,000...",
             "Decompiling Majora's Mask a year early...",
+            "Giving Bruce credit advice...",
+            "Adding useless cutscene command renames...",
+            "Renaming ENEMY to NPC_UNFRIENDLY...",
+            "Decompiling z_sram.c...",
     };
 
     // loads a file into a byte array

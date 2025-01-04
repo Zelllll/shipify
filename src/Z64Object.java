@@ -8,13 +8,13 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 public class Z64Object implements Iterable<RomFile> {
-    private ArrayList<RomFile> _objectRomFiles = new ArrayList<>();
+    private final ArrayList<RomFile> _objectRomFiles = new ArrayList<>();
 
     // constructor
     public Z64Object(File f) {
         String name = f.getName();
         byte[] objectData = Globals.fileToByteArr(f);
-        objectData = patchBranchLists(objectData, name);
+        // objectData = patchBranchLists(objectData, name);
         _objectRomFiles.add(new RomFile(objectData, name));
     }
 
@@ -45,7 +45,7 @@ public class Z64Object implements Iterable<RomFile> {
         ArrayList<Integer> branchListCmdOffsets = findBranchLists(objectData);
         ArrayList<Byte> appendedData = new ArrayList<>();
 
-        if (branchListCmdOffsets.size() == 0) {
+        if (branchListCmdOffsets.isEmpty()) {
             return objectData;
         }
 

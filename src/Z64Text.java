@@ -21,7 +21,7 @@ import java.util.Iterator;
  */
 
 public class Z64Text implements Iterable<RomFile> {
-    private ArrayList<RomFile> _textRomFiles;
+    private final ArrayList<RomFile> _textRomFiles;
 
     public Z64Text(ArrayList<File> textFiles, Z64Code code) {
         _textRomFiles = new ArrayList<>();
@@ -60,6 +60,8 @@ public class Z64Text implements Iterable<RomFile> {
         if (!(((((int) table[0]) & 0xFF) == 0xFF) && ((((int) table[1]) & 0xFF) == 0xFC))) {
             return;
         }
+
+        System.out.println("    Patching message table...");
 
         // make a copy of the table entry for 0xFFFC
         byte[] msgEntryFFFC = new byte[8];
