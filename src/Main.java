@@ -44,27 +44,27 @@ public class Main {
         if (!inputDir.exists() || !inputDir.isDirectory()) {
             throw new IllegalArgumentException("Input directory does not exist or is not a directory: " + inputPath);
         }
-        System.out.println("Input directory verified: " + inputPath);
+        System.out.println(OutputHelpers.YELLOW + "Input directory verified: " + inputPath + OutputHelpers.RESET);
 
         // Validate or create output directory
         File outputDir = new File(outputPath);
         if (!outputDir.exists()) {
             if (outputDir.mkdirs()) {
-                System.out.println("Output directory created: " + outputPath);
+                System.out.println(OutputHelpers.YELLOW + "Output directory created: " + outputPath + OutputHelpers.RESET);
             } else {
                 throw new RuntimeException("Failed to create output directory: " + outputPath);
             }
         } else if (!outputDir.isDirectory()) {
             throw new IllegalArgumentException("Output path exists but is not a directory: " + outputPath);
         }
-        System.out.println("Output directory verified: " + outputPath);
+        System.out.println(OutputHelpers.YELLOW + "Output directory verified: " + outputPath + OutputHelpers.RESET);
 
         // Retrieve files from the input directory
         File[] files = inputDir.listFiles();
         if (files == null || files.length == 0) {
             throw new IllegalArgumentException("Input directory is empty or inaccessible: " + inputPath);
         }
-        System.out.println("Found " + files.length + " files in input directory.");
+        System.out.println(OutputHelpers.BLUE + "Found " + files.length + " files in input directory." + OutputHelpers.RESET);
 
         // Split the array of files into individual file type arrays
         splitFileTypes(files);
@@ -72,7 +72,7 @@ public class Main {
         // Generate output
         build();
 
-        System.out.println("Success! Output generated in: " + outputPath);
+        System.out.println(OutputHelpers.GREEN + OutputHelpers.BOLD + "Success!" + OutputHelpers.RESET + " Output generated in: " + outputPath);
     }
 
 
@@ -146,7 +146,7 @@ public class Main {
         buildEntranceCutsceneTable();
 
         // Print random meme string
-        System.out.println(Globals.MEME_STRINGS[(new Random()).nextInt(Globals.MEME_STRINGS.length)]);
+        System.out.println(OutputHelpers.RED + Globals.MEME_STRINGS[(new Random()).nextInt(Globals.MEME_STRINGS.length)] + OutputHelpers.RESET);
 
         // Save rom to disk
         rom.saveRom(outputPath);
@@ -158,7 +158,7 @@ public class Main {
      * @param rom The ROM writer object to which the files will be added.
      */
     private static void buildMisc(RomWriter rom) {
-        System.out.println("Building miscellaneous files...");
+        OutputHelpers.printProgress("Building miscellaneous files");
 
         // If there are no miscellaneous files, skip
         if (miscFiles.isEmpty()) {
@@ -176,7 +176,7 @@ public class Main {
      * @param rom The ROM writer object to which the objects will be added.
      */
     private static void buildObjects(RomWriter rom) {
-        System.out.println("Building objects...");
+        OutputHelpers.printProgress("Building objects");
 
         // If there are no object files, do not attempt to instantiate a Z64Object object
         if (objectFiles.isEmpty()) {
@@ -199,7 +199,7 @@ public class Main {
      * @param code The Z64Code object containing additional ROM-related information.
      */
     private static void buildAudio(RomWriter rom, Z64Code code) {
-        System.out.println("Building audio...");
+        OutputHelpers.printProgress("Building audio");
 
         // If there are no audio files, do not attempt to instantiate a Z64Audio object
         if (audioFiles.isEmpty()) {
@@ -221,7 +221,7 @@ public class Main {
      * @param code The Z64Code object containing additional ROM-related information.
      */
     private static void buildText(RomWriter rom, Z64Code code) {
-        System.out.println("Building text...");
+        OutputHelpers.printProgress("Building text");
 
         // If there are no text files, do not attempt to instantiate a Z64Audio object
         if (textFiles.isEmpty()) {
@@ -243,6 +243,8 @@ public class Main {
      * @param code The Z64Code object containing additional ROM-related information.
      */
     private static void buildCode(RomWriter rom, Z64Code code) {
+        OutputHelpers.printProgress("Building code");
+
         for (RomFile romFile : code) {
             rom.add(romFile);
         }
@@ -254,7 +256,7 @@ public class Main {
      * Builds the entire entrance table to a header file.
      */
     private static void buildEntranceTable() {
-        System.out.println("Building entrance table...");
+        OutputHelpers.printProgress("Building entrance table");
 
         if (entranceTableFile == null) {
             return;
@@ -336,7 +338,7 @@ public class Main {
      * Builds the entrance cutscene table header.
      */
     private static void buildEntranceCutsceneTable() {
-        System.out.println("Building entrance cutscene table...");
+        OutputHelpers.printProgress("Building entrance cutscene table");
 
         if (entranceCutsceneTableFile == null) {
             return;
@@ -393,7 +395,7 @@ public class Main {
      * @param rom The ROM writer object to which the scene files will be added.
      */
     private static void buildScenes(RomWriter rom) {
-        System.out.println("Building scenes...");
+        OutputHelpers.printProgress("Building scenes and rooms");
 
         ArrayList<Z64Scene> sceneList = genSceneList();
 
