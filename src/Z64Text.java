@@ -101,9 +101,9 @@ public class Z64Text implements Iterable<RomFile> {
     }
 
     /**
-     * Returns an iterator over the list of RomFile objects.
+     * Provides an iterator for the ROM files.
      *
-     * @return Iterator over RomFile objects.
+     * @return An iterator over the `RomFile` objects in this class.
      */
     @Override
     public Iterator<RomFile> iterator() {

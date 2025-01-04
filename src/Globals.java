@@ -87,7 +87,7 @@ public class Globals {
     public static final String ENTRANCE_CS_TABLE_OUT_NAME = "sEntranceCutsceneTable.txt";
     public static final String CODE_TABLE_ENTRANCE_CS_NAME = "sEntranceCutsceneTable";
 
-    // Rom writing
+    // ROM writing
     public static final int ROM_BASE = 0x20;
     public static final String ROM_OUT_NAME = "patch_rom";
     public static final String ROM_FILE_LIST_OUT_NAME = "patch_files.txt";
@@ -141,7 +141,7 @@ public class Globals {
     /**
      * Reads a 4-byte integer from a byte array at a specified offset.
      *
-     * @param arr        The byte array containing the data.
+     * @param arr         The byte array containing the data.
      * @param offsetInArr The offset within the array to start reading from.
      * @return The integer value read from the array.
      * @throws IndexOutOfBoundsException If the offset plus 4 bytes exceeds the array length.
@@ -159,7 +159,7 @@ public class Globals {
     /**
      * Reads a 2-byte short from a byte array at a specified offset.
      *
-     * @param arr        The byte array containing the data.
+     * @param arr         The byte array containing the data.
      * @param offsetInArr The offset within the array to start reading from.
      * @return The short value read from the array.
      * @throws IndexOutOfBoundsException If the offset plus 2 bytes exceeds the array length.

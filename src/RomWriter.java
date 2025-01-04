@@ -10,15 +10,7 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 
 public class RomWriter {
-    private final ArrayList<RomFile> romFiles;
-
-    /**
-     * Constructor for RomWriter.
-     * Initializes an empty list to store RomFiles.
-     */
-    public RomWriter() {
-        romFiles = new ArrayList<RomFile>();
-    }
+    private final ArrayList<RomFile> romFiles = new ArrayList<RomFile>();
 
     /**
      * Adds a RomFile to the writer's internal list.

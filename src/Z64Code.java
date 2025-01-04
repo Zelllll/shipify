@@ -109,7 +109,7 @@ public class Z64Code implements Iterable<RomFile> {
     }
 
     /**
-     * Generates the ROM file for the code and sets the offsets for each data table.
+     * Generates the ROM file for code and sets the offsets for each data table.
      *
      * @return The generated ROM file as a `RomFile` object.
      */

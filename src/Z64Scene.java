@@ -54,7 +54,7 @@ public class Z64Scene implements Iterable<RomFile> {
     }
 
     /**
-     * Finds the addresses of all the scene headers in the scene ROM file.
+     * Finds the addresses of all the alternate scene headers in the scene ROM file.
      *
      * @throws RuntimeException if scene data is malformed or missing expected headers.
      */
@@ -100,7 +100,8 @@ public class Z64Scene implements Iterable<RomFile> {
 
     /**
      * If there are no waterboxes in a map, SharpOcarina sets the segment address
-     * of the waterbox data to be the same address as CamData. This method fixes this by setting the pointer to NULL.
+     * of the waterbox data to be the same address as CamData.
+     * This method fixes this by setting the pointer to NULL instead.
      *
      * @throws RuntimeException if the scene data is malformed.
      */

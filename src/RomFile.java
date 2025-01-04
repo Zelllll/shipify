@@ -52,7 +52,6 @@ public class RomFile {
         }
     }
 
-
     /**
      * Retrieves the data of the RomFile that is currently stored in memory.
      *
@@ -73,10 +72,10 @@ public class RomFile {
     }
 
     /**
-     * Retrieves the current offset associated with this RomFile.
+     * Retrieves the offset associated with this RomFile.
+     * This is the location of the file within the written patch_rom.
      *
-     * @return An integer representing the offset, which may be used for addressing
-     * or other context-specific purposes.
+     * @return An integer representing the offset
      */
     public int getOffset() {
         return offset;
@@ -84,6 +83,7 @@ public class RomFile {
 
     /**
      * Updates the offset value associated with this RomFile.
+     * This is the location of the file within the written patch_rom.
      *
      * @param offset The new offset value to be set.
      */
