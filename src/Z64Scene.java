@@ -13,14 +13,11 @@ import java.util.Iterator;
 import java.util.Set;
 
 public class Z64Scene implements Iterable<RomFile> {
-    private final RomFile _sceneRomFile;
-    private final ArrayList<RomFile> _roomRomFiles = new ArrayList<>();
-    ;
-    private final Set<Integer> _sceneHeaderOffsetList = new HashSet<>();
-    ;
-    private final Set<Integer> _collisionHeaderOffsetList = new HashSet<>();
-    ;
-    private final Set<Integer> _pathwayOffsetList = new HashSet<>();
+    private final RomFile sceneRomFile;
+    private final ArrayList<RomFile> roomRomFiles = new ArrayList<>();
+    private final Set<Integer> sceneHeaderOffsetList = new HashSet<>();
+    private final Set<Integer> collisionHeaderOffsetList = new HashSet<>();
+    private final Set<Path> pathways = new HashSet<>();
 
     /**
      * Constructor for Z64Scene.
@@ -30,10 +27,10 @@ public class Z64Scene implements Iterable<RomFile> {
      * @throws RuntimeException if the scene file is malformed or invalid.
      */
     public Z64Scene(RomFile scene) {
-        _sceneRomFile = scene;
+        sceneRomFile = scene;
         getAlternateSceneHeaderOffsets();
         getCollisionHeaderOffsets();
-        getPathwayOffsets();
+        getPathways();
         fixSharpOcarinaWaterboxPointers();
     }
 
@@ -57,11 +54,11 @@ public class Z64Scene implements Iterable<RomFile> {
      * @throws RuntimeException if scene data is malformed or missing expected headers.
      */
     private void getAlternateSceneHeaderOffsets() {
-        byte[] sceneData = _sceneRomFile.getData();
+        byte[] sceneData = sceneRomFile.getData();
         int altHeaderListOffset = getHeaderCmdOffset(0, DecompEnums.Z64SceneCommand.ALTERNATE_HEADER_LIST.ordinal());
 
         // Add default header at start of file
-        _sceneHeaderOffsetList.add(0);
+        sceneHeaderOffsetList.add(0);
 
         if (altHeaderListOffset > 0) {
             // Skip the blank headers at the start
@@ -69,7 +66,7 @@ public class Z64Scene implements Iterable<RomFile> {
 
             // Add each alternate header in the list
             while (sceneData[altHeaderListOffset] == Globals.SCENE_SEGMENT_NUM) {
-                _sceneHeaderOffsetList.add(segAddrToOffset(sceneData, altHeaderListOffset));
+                sceneHeaderOffsetList.add(segAddrToOffset(sceneData, altHeaderListOffset));
                 altHeaderListOffset += 4;
             }
         }
@@ -83,7 +80,7 @@ public class Z64Scene implements Iterable<RomFile> {
      * @return The offset of the command in the scene data array, or -1 if not found.
      */
     private int getHeaderCmdOffset(int headerBase, int cmd) {
-        byte[] sceneData = _sceneRomFile.getData();
+        byte[] sceneData = sceneRomFile.getData();
 
         if (sceneData != null) {
             while (headerBase < sceneData.length && sceneData[headerBase] != DecompEnums.Z64SceneCommand.END.ordinal()) {
@@ -104,9 +101,9 @@ public class Z64Scene implements Iterable<RomFile> {
      * @throws RuntimeException if the scene data is malformed.
      */
     private void fixSharpOcarinaWaterboxPointers() {
-        byte[] sceneData = _sceneRomFile.getData();
+        byte[] sceneData = sceneRomFile.getData();
 
-        for (Integer colHeaderOffset : _collisionHeaderOffsetList) {
+        for (Integer colHeaderOffset : collisionHeaderOffsetList) {
             int numWaterboxes = Globals.readIntFromByteArray(sceneData, colHeaderOffset + 0x24);
             if (numWaterboxes == 0) {
                 // Set null pointer
@@ -123,31 +120,82 @@ public class Z64Scene implements Iterable<RomFile> {
      * @throws RuntimeException if scene data is malformed or missing collision headers.
      */
     private void getCollisionHeaderOffsets() {
-        byte[] sceneData = _sceneRomFile.getData();
+        byte[] sceneData = sceneRomFile.getData();
 
-        for (Integer header : _sceneHeaderOffsetList) {
+        for (Integer header : sceneHeaderOffsetList) {
             int collisionHeaderCmdOffset = getHeaderCmdOffset(header, DecompEnums.Z64SceneCommand.COLLISION_HEADER.ordinal());
             int collisionHeaderOffset = segAddrToOffset(sceneData, collisionHeaderCmdOffset + 4);
 
             // Add collision header to list
-            _collisionHeaderOffsetList.add(collisionHeaderOffset);
+            collisionHeaderOffsetList.add(collisionHeaderOffset);
         }
     }
 
     /**
-     * Sets the list of pathways to be added to XML.
-     *
-     * @throws RuntimeException if scene data is malformed or missing pathway data.
+     * Class representing a Pathway element.
+     * This class encapsulates information about a single pathway, including
+     * the number of points in the path and the data offset.
      */
-    private void getPathwayOffsets() {
-        byte[] sceneData = _sceneRomFile.getData();
+    private static class Path {
+        int numPoints;
+        int pointOffset;
 
-        for (Integer header : _sceneHeaderOffsetList) {
+        /**
+         * Constructs a Path object with the specified offset and number of points.
+         *
+         * @param pointOffset the offset value for the pathway data
+         * @param numPoints   the number of points in the pathway
+         */
+        public Path(int pointOffset, int numPoints) {
+            this.numPoints = numPoints;
+            this.pointOffset = pointOffset;
+        }
+
+        /**
+         * Gets the offset value for the pathway data.
+         *
+         * @return the offset value
+         */
+        public int getPointOffset() {
+            return pointOffset;
+        }
+
+        /**
+         * Gets the number of points in the pathway.
+         *
+         * @return the number of points
+         */
+        public int getNumPoints() {
+            return numPoints;
+        }
+    }
+
+    /**
+     * Parses and processes pathway data from the scene data file.
+     * Identifies pathway headers in the scene data, extracts pathway offsets,
+     * and constructs a list of Path objects based on the parsed data.
+     */
+    private void getPathways() {
+        final Set<Integer> pathwayArrayOffsets = new HashSet<>();
+        byte[] sceneData = sceneRomFile.getData();
+
+        for (Integer header : sceneHeaderOffsetList) {
             int pathwayHeaderCmdOffset = getHeaderCmdOffset(header, DecompEnums.Z64SceneCommand.PATH_LIST.ordinal());
             int pathwayOffset = segAddrToOffset(sceneData, pathwayHeaderCmdOffset + 4);
 
             // Add pathway to list
-            _pathwayOffsetList.add(pathwayOffset);
+            pathwayArrayOffsets.add(pathwayOffset);
+        }
+
+        for (Integer path : pathwayArrayOffsets) {
+            int tempOffset = path;
+
+            while (sceneData[tempOffset] != 0 && sceneData[tempOffset + 1] == 0 && sceneData[tempOffset + 2] == 0 && sceneData[tempOffset + 3] == 0 &&
+                    sceneData[tempOffset + 4] == Globals.SCENE_SEGMENT_NUM) {
+                // Parse through each pathway
+                pathways.add(new Path(segAddrToOffset(sceneData, tempOffset + 4), sceneData[tempOffset]));
+                tempOffset += 8;
+            }
         }
     }
 
@@ -157,7 +205,7 @@ public class Z64Scene implements Iterable<RomFile> {
      * @param room The ROM file representing the room to add.
      */
     public void addRoom(RomFile room) {
-        _roomRomFiles.add(room);
+        roomRomFiles.add(room);
     }
 
     /**
@@ -168,7 +216,7 @@ public class Z64Scene implements Iterable<RomFile> {
      * @throws IndexOutOfBoundsException if the index is out of range.
      */
     public RomFile getRoom(int index) {
-        return _roomRomFiles.get(index);
+        return roomRomFiles.get(index);
     }
 
     /**
@@ -177,7 +225,7 @@ public class Z64Scene implements Iterable<RomFile> {
      * @return The ROM file representing the scene.
      */
     public RomFile getScene() {
-        return _sceneRomFile;
+        return sceneRomFile;
     }
 
     /**
@@ -186,7 +234,7 @@ public class Z64Scene implements Iterable<RomFile> {
      * @return The number of rooms in the scene.
      */
     public int getNumRooms() {
-        return _roomRomFiles.size();
+        return roomRomFiles.size();
     }
 
     /**
@@ -195,7 +243,7 @@ public class Z64Scene implements Iterable<RomFile> {
      * @return The name of the scene file without the "_scene" suffix.
      */
     public String getName() {
-        return _sceneRomFile.getName().replace("_scene", "");
+        return sceneRomFile.getName().replace("_scene", "");
     }
 
     /**
@@ -225,6 +273,38 @@ public class Z64Scene implements Iterable<RomFile> {
     }
 
     /**
+     * Generates a string representation of a pathway node using the given Path object.
+     *
+     * @param path the Path object containing metadata for the pathway node
+     * @return a formatted XML-like string representing the pathway node
+     */
+    private String pathwayNodeString(Path path) {
+        return "\t\t<Path Name=\"" +
+                getName() + "PathList_" + Integer.toHexString(path.getPointOffset()).toUpperCase() +
+                "\" Offset=\"" +
+                "0x" + Integer.toHexString(path.getPointOffset()).toUpperCase() +
+                "\" NumPaths=\"" + path.getNumPoints() +
+                "\"/>\n";
+    }
+
+    /**
+     * Generates a combined string representation of all pathway nodes.
+     * Iterates through the list of Path objects and constructs a complete
+     * XML string by appending the string representation of each pathway node.
+     *
+     * @return a formatted XML string representing all pathway nodes
+     */
+    private String getAllPathwayNodes() {
+        StringBuilder out = new StringBuilder();
+
+        for (Path path : pathways) {
+            out.append(pathwayNodeString(path));
+        }
+
+        return out.toString();
+    }
+
+    /**
      * Saves the XML representation of the scene and its rooms to a file.
      *
      * @param outPath The path where the XML file should be saved.
@@ -236,10 +316,9 @@ public class Z64Scene implements Iterable<RomFile> {
 
         try (Writer writer = new BufferedWriter(new OutputStreamWriter(
                 Files.newOutputStream(outXmlFile.toPath()), StandardCharsets.UTF_8))) {
-
             // Write the scene XML string, including any extra nodes like CamData
             writer.write("<Root>\n");
-            writer.write(sceneXmlString(getScene(), ""));
+            writer.write(sceneXmlString(getScene(), getAllPathwayNodes()));
 
             // Write the room XML string
             for (int i = 0; i < getNumRooms(); i++) {
@@ -265,7 +344,7 @@ public class Z64Scene implements Iterable<RomFile> {
          */
         @Override
         public boolean hasNext() {
-            return (_index < _roomRomFiles.size());
+            return (_index < roomRomFiles.size());
         }
 
         /**
@@ -278,9 +357,9 @@ public class Z64Scene implements Iterable<RomFile> {
             RomFile out;
 
             if (_index < 0) {
-                out = _sceneRomFile;
+                out = sceneRomFile;
             } else {
-                out = _roomRomFiles.get(_index);
+                out = roomRomFiles.get(_index);
             }
             _index++;
 
