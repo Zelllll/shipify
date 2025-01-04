@@ -3,11 +3,14 @@
  * Class representing a file within a ROM
  */
 
-import java.io.*;
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 
 public class RomFile {
-    private String _name;
-    private byte[] _fileData;
+    private final String _name;
+    private final byte[] _fileData;
     private int _offset;
 
     public RomFile(byte[] rawFile, String name) {

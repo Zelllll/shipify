@@ -4,6 +4,35 @@
  */
 
 public class DecompEnums {
+    public enum Z64SceneCommand {
+        SPAWN_LIST,
+        ACTOR_LIST,
+        UNUSED_2,
+        COLLISION_HEADER,
+        ROOM_LIST,
+        WIND_SETTINGS,
+        ENTRANCE_LIST,
+        SPECIAL_FILES,
+        ROOM_BEHAVIOR,
+        UNDEFINED_9,
+        ROOM_SHAPE,
+        OBJECT_LIST,
+        LIGHT_LIST,
+        PATH_LIST,
+        TRANSITION_ACTOR_LIST,
+        LIGHT_SETTINGS_LIST,
+        TIME_SETTINGS,
+        SKYBOX_SETTINGS,
+        SKYBOX_DISABLES,
+        EXIT_LIST,
+        END,
+        SOUND_SETTINGS,
+        ECHO_SETTINGS,
+        CUTSCENE_DATA,
+        ALTERNATE_HEADER_LIST,
+        MISC_SETTINGS,
+    }
+
     public static final String[] DECOMP_SCENE_TRANSITION_NAMES = {
             "TRANS_TYPE_WIPE",
             "TRANS_TYPE_TRIFORCE",

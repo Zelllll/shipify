@@ -9,7 +9,7 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 
 public class RomWriter {
-    private ArrayList<RomFile> _romFiles;
+    private final ArrayList<RomFile> _romFiles;
 
     // constructor
     public RomWriter() {

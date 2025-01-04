@@ -52,11 +52,6 @@ public class Z64Code implements Iterable<RomFile> {
         _romFile = null;
     }
 
-    // adds a new byte array
-    public void addArray(CodeVariable newArray) {
-        _dataVariables.add(newArray);
-    }
-
     // adds a new array to code
     public void addArray(byte[] data, String name) {
         _dataVariables.add(new CodeVariable(data, name));

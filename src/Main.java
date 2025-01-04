@@ -345,8 +345,8 @@ public class Main {
     private static String formatEntranceCutsceneEntry(byte[] entranceCsTableData, int offset) {
         // get arguments from table entry
         String entrance = DecompEnums.DECOMP_ENTRANCE_INDEX_NAMES[Globals.readShortFromByteArray(entranceCsTableData, offset)];
-        int ageRestriction = ((int)entranceCsTableData[offset + 2] & 0xFF);
-        int flag = ((int)entranceCsTableData[offset + 3] & 0xFF);
+        int ageRestriction = ((int) entranceCsTableData[offset + 2] & 0xFF);
+        int flag = ((int) entranceCsTableData[offset + 3] & 0xFF);
         int segmentAddress = Globals.readIntFromByteArray(entranceCsTableData, offset + 4);
 
         // Format output string
@@ -354,7 +354,7 @@ public class Main {
         out += entrance + ", ";
         out += ageRestriction + ", ";
         out += "0x" + Integer.toHexString(flag) + ", ";
-        out += "\"__OTR__scenes/shared/???/???" +  Integer.toHexString(segmentAddress)+ "???\"},";
+        out += "\"__OTR__scenes/shared/???/???" + Integer.toHexString(segmentAddress) + "???\"},";
 
         return out;
     }

@@ -3,7 +3,7 @@
  * Class representing Zelda 64 audio files
  */
 
-import java.io.*;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 
